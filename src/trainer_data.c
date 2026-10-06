@@ -314,18 +314,19 @@ void CreateNPCTrainerParty(BattleSetup *enemies, int partyIndex, enum HeapID hea
             // Starting in HGSS, additional checks are performed to
             // rand each Pokemon's personality.
             TrMon_OverridePidGender(species, form, monSpecies[i].genderAbilityOverride, &pidGender);
-            // Generate personality by seeding with a value based on the difficulty,
-            // level, species, and opponent ID. Roll the RNG N times, where N is
-            // the index of its trainer class. Finally, left shift the 16-bit
-            // pseudorandom value and add the gender selector.
-            // This guarantees that NPC trainer' Pokemon are generated in a
-            // consistent manner between attempts.
-            // This procedure results in only a 24-bit peersonality value.
-            personality = monSpecies[i].difficulty + monSpecies[i].level + species + enemies->trainerId[partyIndex];
-            SetLCRNGSeed(personality);
-            for (j = 0; j < enemies->trainer[partyIndex].data.trainerClass; j++) {
-                personality = LCRandom();
-            }
+            // COLOR MOD: personality used to be seeded deterministically from difficulty/level/species/
+            // trainerId and rolled a fixed number of times, so a given trainer's given party slot always
+            // produced the exact same personality (and therefore the exact same follower-style color
+            // rotation, on any system that reads a battle mon's personality) on every single encounter.
+            // Now drawn from the same global-RNG-borrowing scheme this function already documents at the
+            // top (seedBak/SetLCRNGSeed(seedBak) below - overworld RNG state is unaffected either way),
+            // matching the same (LCRandom() | (LCRandom() << 16)) pattern CreateBoxMon uses for its own
+            // random-personality path (src/pokemon.c) so trainer Pokemon get genuinely unique colors/
+            // natures/abilities per encounter instead of one fixed value forever. pidGender (encoding the
+            // correct gender, and ability override where TrMon_OverridePidGender applies one) is still
+            // packed into the low byte exactly as before - only the upper, purely-cosmetic/stat-determining
+            // bits are now randomized instead of fixed.
+            personality = (LCRandom() | (LCRandom() << 16));
             personality = (personality << 8) + pidGender;
 
             // Difficulty is a number between 0 and 250 which directly corresponds
@@ -357,11 +358,8 @@ void CreateNPCTrainerParty(BattleSetup *enemies, int partyIndex, enum HeapID hea
             species = monSpeciesMoves[i].species & 0x3FF;
             form = (monSpeciesMoves[i].species & 0xFC00) >> 10;
             TrMon_OverridePidGender(species, form, monSpeciesMoves[i].genderAbilityOverride, &pidGender);
-            personality = monSpeciesMoves[i].difficulty + monSpeciesMoves[i].level + species + enemies->trainerId[partyIndex];
-            SetLCRNGSeed(personality);
-            for (j = 0; j < enemies->trainer[partyIndex].data.trainerClass; j++) {
-                personality = LCRandom();
-            }
+            // COLOR MOD: random (not fixed) personality, see the detailed comment above for TRTYPE_MON.
+            personality = (LCRandom() | (LCRandom() << 16));
             personality = (personality << 8) + pidGender;
             iv = (u8)((monSpeciesMoves[i].difficulty * 31) / 255);
             CreateMon(mon, species, monSpeciesMoves[i].level, iv, TRUE, (s32)personality, OT_ID_RANDOM_NO_SHINY, 0);
@@ -384,11 +382,8 @@ void CreateNPCTrainerParty(BattleSetup *enemies, int partyIndex, enum HeapID hea
             species = monSpeciesItem[i].species & 0x3FF;
             form = (monSpeciesItem[i].species & 0xFC00) >> 10;
             TrMon_OverridePidGender(species, form, monSpeciesItem[i].genderAbilityOverride, &pidGender);
-            personality = monSpeciesItem[i].difficulty + monSpeciesItem[i].level + species + enemies->trainerId[partyIndex];
-            SetLCRNGSeed(personality);
-            for (j = 0; j < enemies->trainer[partyIndex].data.trainerClass; j++) {
-                personality = LCRandom();
-            }
+            // COLOR MOD: random (not fixed) personality, see the detailed comment above for TRTYPE_MON.
+            personality = (LCRandom() | (LCRandom() << 16));
             personality = (personality << 8) + pidGender;
             iv = (u8)((monSpeciesItem[i].difficulty * 31) / 255);
             CreateMon(mon, species, monSpeciesItem[i].level, iv, TRUE, (s32)personality, OT_ID_RANDOM_NO_SHINY, 0);
@@ -409,11 +404,8 @@ void CreateNPCTrainerParty(BattleSetup *enemies, int partyIndex, enum HeapID hea
             species = monSpeciesItemMoves[i].species & 0x3FF;
             form = (monSpeciesItemMoves[i].species & 0xFC00) >> 10;
             TrMon_OverridePidGender(species, form, monSpeciesItemMoves[i].genderAbilityOverride, &pidGender);
-            personality = monSpeciesItemMoves[i].difficulty + monSpeciesItemMoves[i].level + species + enemies->trainerId[partyIndex];
-            SetLCRNGSeed(personality);
-            for (j = 0; j < enemies->trainer[partyIndex].data.trainerClass; j++) {
-                personality = LCRandom();
-            }
+            // COLOR MOD: random (not fixed) personality, see the detailed comment above for TRTYPE_MON.
+            personality = (LCRandom() | (LCRandom() << 16));
             personality = (personality << 8) + pidGender;
             iv = (u8)((monSpeciesItemMoves[i].difficulty * 31) / 255);
             CreateMon(mon, species, monSpeciesItemMoves[i].level, iv, TRUE, (s32)personality, OT_ID_RANDOM_NO_SHINY, 0);

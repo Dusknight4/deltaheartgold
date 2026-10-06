@@ -1883,7 +1883,7 @@ _0221CE18: .word 0x00000444
 	thumb_func_start ov65_0221CE1C
 ov65_0221CE1C: ; 0x0221CE1C
 	push {r3, r4, r5, lr}
-	sub sp, #8
+	sub sp, #16
 	add r5, r0, #0
 	mov r0, #6
 	lsl r0, r0, #6
@@ -1910,12 +1910,23 @@ ov65_0221CE1C: ; 0x0221CE1C
 	add r3, r4, #2
 	ldr r1, _0221CE8C ; =0x000020FC
 	str r0, [sp, #4]
+	; QOL (2026-09-26): trade linking-station hover-preview palette upload used to call the plain,
+	; non-rotating GfGfxLoader_GXLoadPal, so the preview's colors never reflected the shown mon's
+	; personality (for both the local party and the trade partner, since this is the one shared
+	; consumer for both branches) even though the character/shape data upload just above already had
+	; personality-derived data. Fetch template[index].personality (offset 0xC from narcID, i.e. the
+	; same base as the 0x000020FC narcID/palDataID offsets below) and pass it as the 7th argument to
+	; GfGfxLoader_GXLoadPalRotated instead, matching how asm/overlay_14.s already does this correctly
+	; for the PC box preview sprite.
+	ldr r4, _0221CE98 ; =0x00002108
+	ldr r4, [r2, r4]
+	str r4, [sp, #8]
 	ldrh r0, [r2, r1]
 	add r1, r1, #4
 	ldrh r1, [r2, r1]
 	mov r2, #5
 	lsl r3, r3, #5
-	bl GfGfxLoader_GXLoadPal
+	bl GfGfxLoader_GXLoadPalRotated
 	ldr r0, _0221CE84 ; =0x0000211C
 	mov r1, #0
 	str r1, [r5, r0]
@@ -1928,7 +1939,7 @@ _0221CE6C:
 	ldr r2, [r3, r1]
 	orr r0, r2
 	str r0, [r3, r1]
-	add sp, #8
+	add sp, #16
 	pop {r3, r4, r5, pc}
 	.balign 4, 0
 _0221CE84: .word 0x0000211C
@@ -1936,6 +1947,7 @@ _0221CE88: .word 0x000007FC
 _0221CE8C: .word 0x000020FC
 _0221CE90: .word 0x027E0000
 _0221CE94: .word 0x00003FF8
+_0221CE98: .word 0x00002108
 	thumb_func_end ov65_0221CE1C
 
 	thumb_func_start ov65_0221CE98

@@ -13,6 +13,8 @@ static void Pokepic_RunAnimInternal(Pokepic *pokepic);
 static void Pokepic_RunAnim(Pokepic *pokepic);
 static void PokepicManager_BufferCharData(PokepicManager *pokepicManager);
 static void PokepicManager_BufferPlttData(PokepicManager *pokepicManager);
+static u16 RotateColorHue_HGSS(u16 gbaColor, u16 hueShift, s32 satScale, s32 valScale);
+static void Pokepic_RotatePalette(u16 *palette, u32 personality);
 static u8 swapNybbles(u8 val);
 static void Pokepic_MaybeAddSpindaSpots(Pokepic *pokepic, u8 *charData);
 static u16 lcrngUpdate(u32 *p);
@@ -1215,6 +1217,112 @@ static void PokepicManager_BufferCharData(PokepicManager *pokepicManager) {
     pokepicManager->needLoadImage = needCharUpdate;
 }
 
+static u16 RotateColorHue_HGSS(u16 gbaColor, u16 hueShift, s32 satScale, s32 valScale)
+{
+    s32 r = ((gbaColor >> 0) & 0x1F) * 255 / 31;
+    s32 g = ((gbaColor >> 5) & 0x1F) * 255 / 31;
+    s32 b = ((gbaColor >> 10) & 0x1F) * 255 / 31;
+    s32 max = r > g ? (r > b ? r : b) : (g > b ? g : b);
+    s32 min = r < g ? (r < b ? r : b) : (g < b ? g : b);
+    s32 delta = max - min;
+    s32 hue, sat, val = max;
+    s32 C, X, m, rr, gg, bb;
+
+    if (delta == 0)
+    {
+        val = val * valScale / 100;
+        if (val > 255) val = 255;
+        r = g = b = val;
+    }
+    else
+    {
+        sat = delta * 255 / max;
+        if (max == r)
+            hue = 60 * (((g - b) * 100 / delta) % 600) / 100;
+        else if (max == g)
+            hue = 60 * (((b - r) * 100 / delta) + 200) / 100;
+        else
+            hue = 60 * (((r - g) * 100 / delta) + 400) / 100;
+        if (hue < 0) hue += 360;
+        hue = (hue + hueShift) % 360;
+
+        sat = sat * satScale / 100;
+        if (sat > 255) sat = 255;
+        val = val * valScale / 100;
+        if (val > 255) val = 255;
+
+        C = val * sat / 255;
+        X = C * (60 - (hue % 120 > 60 ? hue % 120 - 60 : 60 - hue % 120)) / 60;
+        m = val - C;
+
+        if (hue < 60)       { rr = C; gg = X; bb = 0; }
+        else if (hue < 120) { rr = X; gg = C; bb = 0; }
+        else if (hue < 180) { rr = 0; gg = C; bb = X; }
+        else if (hue < 240) { rr = 0; gg = X; bb = C; }
+        else if (hue < 300) { rr = X; gg = 0; bb = C; }
+        else                { rr = C; gg = 0; bb = X; }
+
+        r = rr + m;
+        g = gg + m;
+        b = bb + m;
+    }
+
+    return (r * 31 / 255) | ((g * 31 / 255) << 5) | ((b * 31 / 255) << 10);
+}
+
+// Rotates a palette of `count` colors in place using the personality-derived hue/sat/val. Index 0 is transparency.
+void PersonalityRotatePalette(u16 *palette, int count, u32 personality) {
+    u16 hueShift = (u16)(((personality & 0x3FF) * 360) / 1024);
+    u16 satSeed = (personality >> 10) & 0x1F;
+    u16 valSeed = (personality >> 15) & 0x1F;
+    s32 satScale = 70 + ((u32)satSeed * 60 / 31);
+    s32 valScale = 85 + ((u32)valSeed * 30 / 31);
+    int j;
+
+    for (j = 1; j < count; ++j) {
+        palette[j] = RotateColorHue_HGSS(palette[j], hueShift, satScale, valScale);
+    }
+}
+
+// Same as PersonalityRotatePalette, but each color can get its own extra hue nudge (hueOffsetsHalfDeg[j], in units of
+// 2 degrees, signed) added to the personality hue shift. Used for small per-Pokemon follower color corrections.
+void PersonalityRotatePaletteWithHueOffsets(u16 *palette, int count, u32 personality, const s8 *hueOffsetsHalfDeg) {
+    u16 baseHue = (u16)(((personality & 0x3FF) * 360) / 1024);
+    u16 satSeed = (personality >> 10) & 0x1F;
+    u16 valSeed = (personality >> 15) & 0x1F;
+    s32 satScale = 70 + ((u32)satSeed * 60 / 31);
+    s32 valScale = 85 + ((u32)valSeed * 30 / 31);
+    int j;
+
+    for (j = 1; j < count; ++j) {
+        int hue = ((int)baseHue + 2 * hueOffsetsHalfDeg[j]) % 360;
+
+        if (hue < 0) {
+            hue += 360;
+        }
+        palette[j] = RotateColorHue_HGSS(palette[j], (u16)hue, satScale, valScale);
+    }
+}
+
+static void Pokepic_RotatePalette(u16 *palette, u32 personality) {
+    PersonalityRotatePalette(palette, 16, personality);
+}
+
+// Called from the battle animation code (ov07_0221FB90, ov07_0221D5B0, ov07_0221D874) after
+// it loads a mon's raw palette from the NARC into a temp sprite/BG, so the temp copy matches
+// the pokepic's rotated colors. pokepic may be NULL.
+void Pokepic_RotateBattlePalette(struct PaletteData *plttData, int bufferId, u16 pos, Pokepic *pokepic) {
+    u32 personality;
+
+    if (pokepic == NULL) {
+        return;
+    }
+    personality = Pokepic_GetTemplate(pokepic)->personality;
+
+    Pokepic_RotatePalette(PaletteData_GetUnfadedBuf(plttData, (PaletteBufferId)bufferId) + pos, personality);
+    Pokepic_RotatePalette(PaletteData_GetFadedBuf(plttData, (PaletteBufferId)bufferId) + pos, personality);
+}
+
 static void PokepicManager_BufferPlttData(PokepicManager *pokepicManager) {
     NNSG2dPaletteData *plttData;
     int i;
@@ -1235,6 +1343,8 @@ static void PokepicManager_BufferPlttData(PokepicManager *pokepicManager) {
                 pokepicManager->plttRawData[j + 16 * i] = src[j];
                 pokepicManager->plttRawDataUnfaded[j + 16 * i] = src[j];
             }
+            Pokepic_RotatePalette(pokepicManager->plttRawData + 16 * i, pokepicManager->pics[i].template.personality);
+            Pokepic_RotatePalette(pokepicManager->plttRawDataUnfaded + 16 * i, pokepicManager->pics[i].template.personality);
             Heap_Free(nclrFile);
             if (pokepicManager->pics[i].shadow.palSlot != 0) {
                 nclrFile = AllocAndReadWholeNarcMemberByIdPair(NARC_poketool_pokegra_otherpoke, NARC_otherpoke_260_NCLR, pokepicManager->heapID);

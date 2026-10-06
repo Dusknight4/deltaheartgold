@@ -11,6 +11,9 @@ LocalMapObject *FollowMon_InitMapObject(MapObjectManager *mapObjectManager, int 
 void FollowMon_ChangeMon(MapObjectManager *mapObjectManager, u32 mapNo);
 LocalMapObject *FollowMon_GetMapObject(FieldSystem *fieldSystem);
 u32 FollowMon_GetSpriteID(int species, u16 form, u32 gender);
+void FollowMon_OnModelLoaded(MapObjectManager *mapObjectManager, int spriteId, void *modelData);
+void FollowMon_RefreshModelPalette(LocalMapObject *mapObject, void *model);
+void FollowMon_ForcePaletteReapply(void);
 void sub_02069DC8(LocalMapObject *mapObject, BOOL enableBit);
 void sub_02069DEC(LocalMapObject *mapObject, BOOL enableBit);
 u8 sub_02069E14(LocalMapObject *mapObject);
@@ -21,6 +24,12 @@ u8 sub_02069EAC(LocalMapObject *mapObject);
 u8 sub_02069EC0(LocalMapObject *mapObject);
 u8 sub_02069ED4(LocalMapObject *mapObject);
 void FollowMon_SetObjectParams(LocalMapObject *mapObject, int species, u8 form, BOOL shiny);
+// QOL (2026-09-26): register/clear a personality for a non-follower 3D Pokemon model (e.g. a Day Care
+// pen mon or an Underground photo stand-in) so FollowMon_RefreshModelPalette also color-rotates it.
+// Clear must be called before/when the object is destroyed, to avoid a stale entry matching a later,
+// unrelated object allocated at the same LocalMapObject pointer.
+void FollowMon_SetObjectPersonality(LocalMapObject *mapObject, u32 personality);
+void FollowMon_ClearObjectPersonality(LocalMapObject *mapObject);
 void sub_02069F0C(LocalMapObject *mapObject, int species, u8 form, BOOL shiny, int a4);
 void FieldSystem_SetFollowerPokeParam(FieldSystem *fieldSystem, int species, u8 form, BOOL shiny, u8 gender);
 u8 FollowMon_GetSizeParamBySpecies(int species);

@@ -31,6 +31,7 @@
 .public GfGfxLoader_LoadCharData
 .public GfGfxLoader_LoadScrnData
 .public GfGfxLoader_GXLoadPal
+.public GfGfxLoader_GXLoadPalRotated
 .public GfGfxLoader_GetCharData
 .public GfGfxLoader_GetScrnData
 .public GfGfxLoader_GetCharDataFromOpenNarc

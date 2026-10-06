@@ -23,6 +23,7 @@
 .public NARC_New
 .public NARC_Delete
 .public GfGfxLoader_GXLoadPal
+.public GfGfxLoader_GXLoadPalRotated
 .public GfGfxLoader_GetCharData
 .public GfGfxLoader_LoadCharDataFromOpenNarc
 .public GfGfxLoader_LoadScrnDataFromOpenNarc

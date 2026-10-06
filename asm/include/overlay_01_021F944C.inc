@@ -77,6 +77,7 @@
 .public GetMoveModelNoBySpriteId
 .public ov01_021F9318
 .public ReadMModelFromNarcInternal
+.public FollowMon_OnModelLoaded
 .public ov01_021F93AC
 .public ov01_021F944C
 .public ov01_021F94A0

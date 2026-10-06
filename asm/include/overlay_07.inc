@@ -31,6 +31,7 @@
 .public GfGfxLoader_LoadScrnDataFromOpenNarc
 .public Pokepic_SetAttr
 .public Pokepic_GetAttr
+.public Pokepic_RotateBattlePalette
 .public Pokepic_AddAttr
 .public Pokepic_SetVisible
 .public Pokepic_StartPaletteFade

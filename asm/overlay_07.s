@@ -3404,6 +3404,16 @@ ov07_0221D5B0: ; 0x0221D5B0
 	ldr r2, [sp, #0x10]
 	ldr r3, [r5]
 	bl PaletteData_LoadNarc
+	add r0, r5, #0
+	add r1, r6, #0
+	bl ov07_0221FA48
+	add r3, r0, #0
+	add r0, r5, #0
+	add r0, #0xc8
+	ldr r0, [r0]
+	mov r1, #0
+	mov r2, #0x80
+	bl Pokepic_RotateBattlePalette
 	mov r0, #0
 	str r0, [sp]
 	str r0, [sp, #4]
@@ -3867,6 +3877,16 @@ _0221D9C2:
 	ldr r2, [sp, #0x14]
 	ldr r3, [r4]
 	bl PaletteData_LoadNarc
+	add r0, r4, #0
+	ldr r1, [sp, #0x1c]
+	bl ov07_0221FA48
+	add r3, r0, #0
+	add r0, r4, #0
+	add r0, #0xc8
+	ldr r0, [r0]
+	mov r1, #2
+	ldr r2, [sp, #8]
+	bl Pokepic_RotateBattlePalette
 _0221D9F8:
 	ldr r0, [sp, #0xc]
 	lsl r5, r0, #2
@@ -8762,6 +8782,11 @@ _0221FDB2:
 	ldr r2, [sp, #0x24]
 	ldr r3, [r4]
 	bl PaletteData_LoadNarc
+	ldr r0, [r4, #0x10]
+	mov r1, #2
+	ldr r2, [sp, #8]
+	add r3, r5, #0
+	bl Pokepic_RotateBattlePalette
 _0221FDDC:
 	ldr r0, [sp, #0x2c]
 	add r7, r7, #4

@@ -299,6 +299,7 @@ static BOOL Task_MountOrDismountBicycle(TaskManager *taskManager) {
             if (FollowMon_IsActive(fieldSystem)) {
                 sub_02069E84(FollowMon_GetMapObject(fieldSystem), 1);
                 sub_02069DC8(FollowMon_GetMapObject(fieldSystem), TRUE);
+                FollowMon_ForcePaletteReapply();
             }
         } else {
             if (SndRadio_GetSeqNo() == 0) {
@@ -311,6 +312,7 @@ static BOOL Task_MountOrDismountBicycle(TaskManager *taskManager) {
             ov01_02205D68(fieldSystem);
             if (FollowMon_IsActive(fieldSystem)) {
                 sub_02069E84(FollowMon_GetMapObject(fieldSystem), FALSE);
+                FollowMon_ForcePaletteReapply();
             }
         }
         (*state_p)++;

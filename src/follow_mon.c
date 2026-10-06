@@ -2,19 +2,130 @@
 
 #include "constants/follow_mon_idx.h"
 #include "constants/scrcmd.h"
+#include "constants/sprites.h"
 
+#include "gf_3d_render.h"
 #include "map_header.h"
 #include "map_object.h"
 #include "map_object_manager.h"
+#include "pokepic.h"
 #include "save_follow_mon.h"
 #include "script.h"
 #include "script_pokemon_util.h"
+#include "species_gender_ratios_table.h"
+#include "vram_transfer_manager.h"
+
+// Palette-rotation ("personality color") support for the follower's 3D model texture.
+// The pristine palette of each follower model is remembered when its resource is loaded,
+// so it can be re-rotated for a different personality without reloading the resource.
+#define FOLLOW_PLTT_CACHE_SIZE 4
+#define FOLLOW_PLTT_MAX_COLORS 256
+// After a follower model is (re)loaded, keep re-uploading for this many refresh calls so the
+// rotated palette still wins if the resource's own VRAM upload lands after our first one.
+#define FOLLOW_PLTT_REAPPLY_COUNT 4
+
+typedef struct FollowMonPlttCache {
+    u16 spriteId;
+    u16 count;
+    u16 colors[FOLLOW_PLTT_MAX_COLORS];
+} FollowMonPlttCache;
+
+extern u32 sub_02023FB0(void *model);
+
+static FollowMonPlttCache sFollowPlttCache[FOLLOW_PLTT_CACHE_SIZE];
+static u8 sFollowPlttCacheNext;
+static u16 sFollowPlttRotated[FOLLOW_PLTT_MAX_COLORS];
+static void *sFollowAppliedModel;
+static u32 sFollowAppliedSprite;
+static u32 sFollowAppliedPersonality;
+static u8 sFollowPendingApplies;
+static u8 sFollowAppliedShiny;
 
 static void FollowMon_Clear(FollowMon *followMon);
 static void FollowMon_SetObjectShiny(LocalMapObject *mapObject, BOOL enable);
 static BOOL FollowMon_DiglettPermissionCheck(int mapno);
 static void FollowMon_SetObjectForm(LocalMapObject *mapObject, int species, u8 form);
 static LocalMapObject *FollowMon_CreateMapObject(MapObjectManager *mapObjectManager, int species, u16 form, int gender, int direction, int x, int y, int shiny);
+static int FollowMon_FindExtraPersonalitySlot(LocalMapObject *mapObject);
+
+// QOL (2026-09-26): registry of personality values for 3D Pokemon models OTHER than the player's own
+// follower (obj_partner_poke) - e.g. Pokemon wandering the Day Care pen, or the extra party-member
+// stand-ins shown in an Underground photo. FollowMon_RefreshModelPalette used to only ever rotate the
+// one live follower object; every other 3D mon model on the field just showed its raw, unrotated
+// palette (shininess still worked, since that's a separate static per-object flag, not a rotation).
+// Keyed by the LocalMapObject pointer itself (not MapObject_GetID(), since e.g. the photo feature can
+// have several simultaneous stand-in objects that all share the same ID) - multiple such objects can be
+// registered at once, unlike the single follower which needs no registry at all.
+//
+// BUGFIX (2026-09-26, follow-up): each slot has its OWN rotatedColors buffer, rather than all extra
+// objects sharing the single global sFollowPlttRotated buffer the follower uses. GF_CreateNewVramTransferTask
+// only QUEUES a transfer (src pointer + dest); the actual copy happens later, batched, when
+// GF_RunVramTransferTasks runs. With a shared source buffer, refreshing a second object before that batch
+// runs would overwrite the first object's already-queued source data, so whichever object refreshed LAST
+// in a frame silently "won" for every object queued that same frame (observed as: Day Care top pen mon
+// showing an invalid/wrong palette while the bottom one was correct, fixed by removing the bottom mon; the
+// player's own follower could also show a Day Care mon's colors). This never surfaced before this
+// registry existed because the follower was the only caller, so there was only ever one queued transfer
+// per frame.
+#define FOLLOW_MON_EXTRA_PERSONALITY_SLOTS 8
+typedef struct FollowMonExtraPersonality {
+    LocalMapObject *mapObject;
+    u32 personality;
+    u16 rotatedColors[FOLLOW_PLTT_MAX_COLORS];
+    void *appliedModel;
+    u32 appliedPersonality;
+    u32 appliedShiny;
+    BOOL hasApplied;
+} FollowMonExtraPersonality;
+static FollowMonExtraPersonality sFollowMonExtraPersonalities[FOLLOW_MON_EXTRA_PERSONALITY_SLOTS];
+
+void FollowMon_SetObjectPersonality(LocalMapObject *mapObject, u32 personality) {
+    int i;
+    int freeSlot = -1;
+
+    for (i = 0; i < FOLLOW_MON_EXTRA_PERSONALITY_SLOTS; i++) {
+        if (sFollowMonExtraPersonalities[i].mapObject == mapObject) {
+            sFollowMonExtraPersonalities[i].personality = personality;
+            return;
+        }
+        if (freeSlot < 0 && sFollowMonExtraPersonalities[i].mapObject == NULL) {
+            freeSlot = i;
+        }
+    }
+    if (freeSlot >= 0) {
+        sFollowMonExtraPersonalities[freeSlot].mapObject = mapObject;
+        sFollowMonExtraPersonalities[freeSlot].personality = personality;
+        // Force at least one real rebuild+reupload for this freshly-registered object below, rather
+        // than trusting a stale appliedModel/appliedPersonality left behind by whatever object
+        // previously occupied this slot (see hasApplied's use in FollowMon_RefreshModelPalette).
+        sFollowMonExtraPersonalities[freeSlot].hasApplied = FALSE;
+    }
+    // If every slot is already in use, this object simply won't get a rotated palette - a
+    // cosmetic-only degradation (never a crash), and 8 slots comfortably covers the known callers
+    // (2 Day Care pen slots, up to 5 non-lead photo stand-ins).
+}
+
+void FollowMon_ClearObjectPersonality(LocalMapObject *mapObject) {
+    int i;
+
+    for (i = 0; i < FOLLOW_MON_EXTRA_PERSONALITY_SLOTS; i++) {
+        if (sFollowMonExtraPersonalities[i].mapObject == mapObject) {
+            sFollowMonExtraPersonalities[i].mapObject = NULL;
+            return;
+        }
+    }
+}
+
+static int FollowMon_FindExtraPersonalitySlot(LocalMapObject *mapObject) {
+    int i;
+
+    for (i = 0; i < FOLLOW_MON_EXTRA_PERSONALITY_SLOTS; i++) {
+        if (sFollowMonExtraPersonalities[i].mapObject == mapObject) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 static const u16 sModelIndexLUT[] = {
     FOLLOWER_MON_NONE,
@@ -1505,10 +1616,321 @@ static const u16 sFemaleFlagLUT[] = {
     FALSE, // SPECIES_ARCEUS
 };
 
+// Reads the follower's identity from state the game already keeps up to date (followMon.species/form/gender
+// and unk108->personality) instead of looking at the party. This is called from the model load hook and
+// every frame from the draw handlers, so it must stay cheap and must not allocate or read from the ROM
+// (GetMonGender does both: AllocAndLoadMonPersonal).
+static BOOL FollowMon_GetLeadColorInfo(FieldSystem *fieldSystem, u32 *spriteId, u32 *personality, u32 *shiny) {
+    // HARDWARE CRASH FIX (2026-09-22): fieldSystem can be NULL, or point at a MapObjectManager whose
+    // fieldSystem back-pointer has not been set yet, when a follower-species model is (pre)loaded during
+    // map/save setup - e.g. right after choosing a starter, or when continuing a save that already has a
+    // party leader - because FollowMon_OnModelLoaded (the model-load hook this is called from) can fire
+    // for the follower's own model before MapObjectManager_GetFieldSystem(mapObjectManager) has anything
+    // valid to return. Dereferencing that NULL/garbage fieldSystem at the unk108 field offset (0x108) is
+    // exactly the "Error: Data Abort! ADDR: <base>+0x108" crash reported on real hardware and melonDS -
+    // DeSmuME silently tolerated the same near-NULL read (mapped, zeroed low memory in its emulation),
+    // which is why this never showed up there. Bail out here instead: this one model load just won't be
+    // pre-rotated, and FollowMon_RefreshModelPalette (called every frame once the follower object is
+    // actually alive, by which point the field system is guaranteed valid) re-applies the correct
+    // rotated palette a frame or two later, so there is no visible regression.
+    if (fieldSystem == NULL) {
+        return FALSE;
+    }
+
+    FieldSystemUnkSub108 *lead = fieldSystem->unk108;
+
+    if (fieldSystem->followMon.species == SPECIES_NONE || lead == NULL || !lead->isRegistered || lead->species != fieldSystem->followMon.species) {
+        return FALSE;
+    }
+
+    *spriteId = FollowMon_GetSpriteID(fieldSystem->followMon.species, fieldSystem->followMon.form, fieldSystem->followMon.gender);
+    *personality = lead->personality;
+    *shiny = fieldSystem->followMon.shiny != 0;
+    return TRUE;
+}
+
+// Some follower palettes look too dark next to their status-screen sprite. This is a per-Pokemon brightness fix, in
+// percent of the original RGB values (100 = unchanged), applied to the palette BEFORE the personality rotation.
+// Totodile's shiny follower palette is a few shades too dark. Raise this to make it brighter, lower it to tone it down.
+#define FOLLOW_TOTODILE_SHINY_BRIGHTNESS_PERCENT 125
+
+static u32 FollowMon_GetBrightnessPercent(u32 spriteId, u32 shiny) {
+    if (shiny && spriteId == SPRITE_FOLLOWER_MON_TOTODILE) {
+        return FOLLOW_TOTODILE_SHINY_BRIGHTNESS_PERCENT;
+    }
+    return 100;
+}
+
+// Per-color hue nudges (units of 2 degrees) for follower palettes whose colors land on a different hue than the
+// status-screen sprite after the same rotation. The shiny Totodile / Feraligatr follower body colors (palette
+// indexes 9-12) are 15-28 degrees higher on the hue wheel than the status sprite's, which reads as blue drifting to
+// purple, so they are pulled back by 16 degrees (-8 * 2). All other colors are unchanged.
+static const s8 sShinyTotodileLineHueOffsets[16] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, -8, -8, -8, -8, 0, 0, 0,
+};
+
+static const s8 *FollowMon_GetHueOffsets(u32 spriteId, u32 shiny) {
+    if (shiny && (spriteId == SPRITE_FOLLOWER_MON_TOTODILE || spriteId == SPRITE_FOLLOWER_MON_FERALIGATR)) {
+        return sShinyTotodileLineHueOffsets;
+    }
+    return NULL;
+}
+
+static u16 FollowMon_BrightenColor(u16 color, u32 percent) {
+    u32 r = (color & 0x1F) * percent / 100;
+    u32 g = ((color >> 5) & 0x1F) * percent / 100;
+    u32 b = ((color >> 10) & 0x1F) * percent / 100;
+
+    if (r > 31) {
+        r = 31;
+    }
+    if (g > 31) {
+        g = 31;
+    }
+    if (b > 31) {
+        b = 31;
+    }
+    return (u16)(r | (g << 5) | (b << 10));
+}
+
+// A follower model's texture holds two palettes of 16 colors: slot 0 is the normal coloring and slot 1 is the
+// shiny coloring (the game switches between them for shiny Pokemon). Build the personality-rotated palette from
+// the variant matching the Pokemon's real shininess and write it into EVERY slot, so the follower always shows
+// the rotated normal palette for a normal Pokemon and the rotated shiny palette for a shiny one, no matter which
+// slot the game ends up displaying. index 0 of each 16-color palette is transparency and is left alone.
+static void FollowMon_BuildRotatedPalette(u16 *dst, const u16 *pristine, int count, u32 shiny, u32 personality, u32 brightnessPercent, const s8 *hueOffsets) {
+    int variant = (shiny && count >= 32) ? 1 : 0;
+    int i;
+    int j;
+
+    for (i = 0; i < count; i += 16) {
+        int n = count - i < 16 ? count - i : 16;
+
+        for (j = 0; j < n; ++j) {
+            dst[i + j] = (count >= 32) ? pristine[variant * 16 + j] : pristine[i + j];
+            if (j != 0 && brightnessPercent != 100) {
+                dst[i + j] = FollowMon_BrightenColor(dst[i + j], brightnessPercent);
+            }
+        }
+        if (hueOffsets != NULL && n == 16) {
+            PersonalityRotatePaletteWithHueOffsets(dst + i, n, personality, hueOffsets);
+        } else {
+            PersonalityRotatePalette(dst + i, n, personality);
+        }
+    }
+}
+
+static FollowMonPlttCache *FollowMon_FindPlttCache(u32 spriteId) {
+    int i;
+
+    for (i = 0; i < FOLLOW_PLTT_CACHE_SIZE; ++i) {
+        if (sFollowPlttCache[i].count != 0 && sFollowPlttCache[i].spriteId == spriteId) {
+            return &sFollowPlttCache[i];
+        }
+    }
+    return NULL;
+}
+
+// Called from ov01_021FA61C right after a map object model's raw data is read from the NARC and
+// before it is uploaded to VRAM. Remembers the pristine palette. Does NOT touch mapObjectManager's
+// fieldSystem (see the HARDWARE CRASH FIX #2 comment below) - FollowMon_RefreshModelPalette (called
+// every frame from a verified-live map object) does the actual rotating instead, a frame or two later.
+void FollowMon_OnModelLoaded(MapObjectManager *mapObjectManager, int spriteId, void *modelData) {
+    NNSG3dResTex *tex;
+    u16 *plttData;
+    FollowMonPlttCache *cache;
+    int count;
+
+    if (spriteId < SPRITE_FOLLOWER_MON_BULBASAUR || spriteId > SPRITE_FOLLOWER_MON_ARCEUS_DARK) {
+        return;
+    }
+    tex = NNS_G3dGetTex((NNSG3dResFileHeader *)modelData);
+    if (tex == NULL) {
+        return;
+    }
+    plttData = (u16 *)NNS_G3dGetPlttData(tex);
+    count = ((u32)tex->plttInfo.sizePltt << 3) / 2;
+    if (count > FOLLOW_PLTT_MAX_COLORS) {
+        count = FOLLOW_PLTT_MAX_COLORS;
+    }
+    if (count == 0) {
+        return;
+    }
+
+    cache = FollowMon_FindPlttCache(spriteId);
+    if (cache == NULL) {
+        cache = &sFollowPlttCache[sFollowPlttCacheNext];
+        sFollowPlttCacheNext = (sFollowPlttCacheNext + 1) % FOLLOW_PLTT_CACHE_SIZE;
+    }
+    cache->spriteId = spriteId;
+    cache->count = count;
+    MI_CpuCopy16(plttData, cache->colors, count * sizeof(u16));
+
+    // VRAM is about to be (re)filled from the original palette (e.g. after a battle wiped it),
+    // so whatever we last uploaded no longer counts as applied. FollowMon_RefreshModelPalette (called
+    // every single field frame) will see sFollowPendingApplies != 0 and re-rotate + re-upload within a
+    // frame or two - there is no need to rotate synchronously here too (see below).
+    sFollowAppliedModel = NULL;
+    sFollowPendingApplies = FOLLOW_PLTT_REAPPLY_COUNT;
+
+    // HARDWARE CRASH FIX #2 (2026-09-22, follow-up to the earlier NULL check in FollowMon_GetLeadColorInfo):
+    // this used to also call FollowMon_GetLeadColorInfo(MapObjectManager_GetFieldSystem(mapObjectManager), ...)
+    // right here, to rotate the palette immediately so the model's very first rendered frame was already
+    // correct. On real hardware/melonDS this crashed a SECOND time after the first fix (same Data Abort,
+    // "fieldSystem->unk108" again, now with fieldSystem holding a non-NULL but STALE value - e.g. ADDR
+    // 001F0108 - so a plain `fieldSystem == NULL` check does not catch it). mapObjectManager is passed in
+    // from ov01_021FA61C's raw model-load callback, whose timing relative to this specific
+    // MapObjectManager's lifetime (created/destroyed per map, e.g. on a cave exit / any warp -
+    // MapObjectManager_Init / MapObjectManager_Delete in map_object.c and field_warp_tasks.c) is not
+    // something this mod's hook controls or can safely re-verify from here; there is no cheap, reliable way
+    // to tell "freshly zeroed" apart from "stale pointer left over from a just-freed manager". Rather than
+    // guess at further pointer sanity checks, this load hook no longer dereferences mapObjectManager's
+    // fieldSystem AT ALL - it only caches the pristine palette (above). FollowMon_RefreshModelPalette does
+    // 100% of the actual rotating, every frame, using a LocalMapObject it already verified is live
+    // (`MapObject_GetID(mapObject) != obj_partner_poke` returns early otherwise) - a source this hook
+    // cannot get a stale/dangling instance of, unlike the raw model-load callback's own manager argument.
+    // COST: the model's first rendered frame (right as it (re)loads) may briefly show its raw, unrotated
+    // palette instead of the correct color, corrected within a frame or two once the refresh hook runs -
+    // the same trade-off already accepted elsewhere in this mod (see Changelog ENTRY AG) when a choice
+    // arose between a cosmetic one-frame flash and a correctness/crash risk.
+}
+
+// QOL (2026-09-27, per user report): force the same "VRAM no longer trustworthy, re-rotate + re-upload
+// within a frame or two" recovery that FollowMon_OnModelLoaded already does after a battle or map (re)load
+// - see the HARDWARE CRASH FIX #2 comment below for why that recovery exists. Bicycle mount/dismount
+// (Task_MountOrDismountBicycle in field_use_item.c) does not reload the follower's model at all (no
+// FollowMon_SetSpriteID/OnModelLoaded call happens on that path), so the dedup check in
+// FollowMon_RefreshModelPalette below normally has no reason to distrust whatever it last uploaded. On real
+// hardware/melonDS this mod's follower and the player's own bike sprite are close together on screen for
+// several frames during the mount/dismount animation while movement is paused, and occasionally the
+// follower's color rotation is not showing afterwards - i.e. exactly the class of "something outside this
+// module touched the palette's VRAM destination behind its back" case the OnModelLoaded comment already
+// describes, just from a different trigger. Calling this from both ends of the mount/dismount transition
+// costs at most a few redundant identical re-uploads when nothing was actually wrong.
+void FollowMon_ForcePaletteReapply(void) {
+    sFollowAppliedModel = NULL;
+    sFollowPendingApplies = FOLLOW_PLTT_REAPPLY_COUNT;
+}
+
+// Re-uploads the follower's texture palette to VRAM, rotated for the current party leader's
+// personality, whenever the model, sprite or personality differs from what was last uploaded.
+// Safe to call every frame.
+//
+// QOL (2026-09-26): generalized to also rotate any OTHER 3D Pokemon model registered via
+// FollowMon_SetObjectPersonality (Day Care pen mons, Underground photo stand-ins) - previously this
+// function unconditionally bailed unless the object's ID was exactly obj_partner_poke, so every other
+// 3D mon model on the field only ever showed its raw, unrotated palette. Non-follower objects use their
+// own per-slot "already applied" dedup state (separate from sFollowApplied*, which only tracks the one
+// follower), rather than always rebuild+reupload.
+//
+// BUGFIX (2026-09-26, follow-up 2): this dedup gate matters beyond just avoiding redundant work. Two
+// simultaneously-displayed objects of the IDENTICAL SPECIES resolve to the same sub_02023FB0(model)
+// plttKey (same underlying shared model resource -> same VRAM palette destination), even though each
+// object now has its own SOURCE buffer (previous fix). Before this change, a non-follower object rebuilt
+// and re-queued its transfer completely unconditionally on every single call, so if it shared a
+// destination with the follower, its every-frame writes would immediately stomp any less-frequent write
+// the follower made (observed as: swapping the follower to a same-species-as-a-Day-Care-mon individual
+// shows the correct color for about one frame, then gets overwritten back to the pen mon's color, and
+// stays that way). Gating non-follower writes on real changes lets whichever side changed MOST RECENTLY
+// keep the shared destination until the other side's own state changes too. This does not make two
+// simultaneous DIFFERENT colors possible for the same species at once - that would need independent VRAM
+// destinations per object, which is a deeper engine-level constraint (shared model resource -> shared
+// palette slot) - but it stops the constant one-sided overwrite for the common case of an
+// occasionally-changing follower alongside static Day Care/photo stand-ins.
+void FollowMon_RefreshModelPalette(LocalMapObject *mapObject, void *model) {
+    FieldSystem *fieldSystem;
+    FollowMonPlttCache *cache;
+    u32 leadSprite;
+    u32 personality;
+    u32 shiny;
+    u32 spriteId;
+    u32 plttKey;
+    BOOL isFollower;
+    int extraSlot = -1;
+    u16 *rotatedBuf;
+
+    if (model == NULL) {
+        return;
+    }
+    isFollower = (MapObject_GetID(mapObject) == obj_partner_poke);
+    spriteId = MapObject_GetSpriteID(mapObject);
+
+    if (isFollower) {
+        fieldSystem = MapObjectManager_GetFieldSystem(MapObject_GetManager(mapObject));
+        if (!FollowMon_GetLeadColorInfo(fieldSystem, &leadSprite, &personality, &shiny)) {
+            return;
+        }
+        if (spriteId != leadSprite) {
+            return;
+        }
+        if (sFollowPendingApplies == 0 && sFollowAppliedModel == model && sFollowAppliedSprite == spriteId && sFollowAppliedPersonality == personality && sFollowAppliedShiny == shiny) {
+            return;
+        }
+        rotatedBuf = sFollowPlttRotated;
+    } else {
+        extraSlot = FollowMon_FindExtraPersonalitySlot(mapObject);
+        if (extraSlot < 0) {
+            return;
+        }
+        personality = sFollowMonExtraPersonalities[extraSlot].personality;
+        shiny = MapObject_GetParam(mapObject, 2) & 1; // matches FollowMon_SetObjectShiny's bit 0
+        if (sFollowMonExtraPersonalities[extraSlot].hasApplied && sFollowMonExtraPersonalities[extraSlot].appliedModel == model && sFollowMonExtraPersonalities[extraSlot].appliedPersonality == personality && sFollowMonExtraPersonalities[extraSlot].appliedShiny == shiny) {
+            return;
+        }
+        // BUGFIX (2026-09-26): use this object's OWN buffer, not the shared sFollowPlttRotated - see the
+        // comment on the registry above for why sharing one buffer across multiple same-frame refreshes
+        // corrupted whichever object's VRAM transfer was still queued when a later object's refresh
+        // overwrote the shared source data.
+        rotatedBuf = sFollowMonExtraPersonalities[extraSlot].rotatedColors;
+    }
+
+    cache = FollowMon_FindPlttCache(spriteId);
+    if (cache == NULL) {
+        return;
+    }
+    plttKey = sub_02023FB0(model);
+    if (plttKey == 0) {
+        return;
+    }
+
+    FollowMon_BuildRotatedPalette(rotatedBuf, cache->colors, cache->count, shiny, personality, FollowMon_GetBrightnessPercent(spriteId, shiny), FollowMon_GetHueOffsets(spriteId, shiny));
+    DC_FlushRange(rotatedBuf, cache->count * sizeof(u16));
+    GF_CreateNewVramTransferTask(NNS_GFD_DST_3D_TEX_PLTT, NNS_GfdGetPlttKeyAddr(plttKey), rotatedBuf, cache->count * sizeof(u16));
+
+    if (isFollower) {
+        sFollowAppliedModel = model;
+        sFollowAppliedSprite = spriteId;
+        sFollowAppliedPersonality = personality;
+        sFollowAppliedShiny = shiny;
+        if (sFollowPendingApplies != 0) {
+            --sFollowPendingApplies;
+        }
+    } else {
+        sFollowMonExtraPersonalities[extraSlot].appliedModel = model;
+        sFollowMonExtraPersonalities[extraSlot].appliedPersonality = personality;
+        sFollowMonExtraPersonalities[extraSlot].appliedShiny = shiny;
+        sFollowMonExtraPersonalities[extraSlot].hasApplied = TRUE;
+    }
+}
+
+static void FollowMon_SetSpriteID(LocalMapObject *mapObject, u32 spriteId) {
+    BOOL sameSprite = MapObject_GetSpriteID(mapObject) == spriteId;
+
+    MapObject_SetSpriteID(mapObject, spriteId);
+    if (sameSprite) {
+        // The model is not reloaded for the same sprite, so a different individual needs a palette refresh.
+        FollowMon_RefreshModelPalette(mapObject, *(void **)sub_0205F40C(mapObject));
+    }
+}
+
 LocalMapObject *FollowMon_InitMapObject(MapObjectManager *mapObjectManager, int x, int y, int direction, u32 mapNo) {
     FieldSystem *fieldSystem = MapObjectManager_GetFieldSystem(mapObjectManager);
     Party *party = SaveArray_Party_Get(fieldSystem->saveData);
     int partyCount = Party_GetCount(party);
+
+    // The field is being (re)built (map load, return from battle): VRAM contents are not trustworthy.
+    sFollowAppliedModel = NULL;
+    sFollowPendingApplies = FOLLOW_PLTT_REAPPLY_COUNT;
 
     FollowMon_Clear(&fieldSystem->followMon);
     Save_FollowMon_SetUnused2bitField(0, Save_FollowMon_Get(fieldSystem->saveData));
@@ -1528,6 +1950,10 @@ LocalMapObject *FollowMon_InitMapObject(MapObjectManager *mapObjectManager, int 
             int form = GetMonData(mon, MON_DATA_FORM, NULL);
             int gender = GetMonData(mon, MON_DATA_GENDER, NULL); // must be int to match, even though gender is u8
             int shiny = MonIsShiny(mon);
+
+            // Set before the model is created so the model load hook already knows which Pokemon this is.
+            FieldSystem_SetFollowerPokeParam(fieldSystem, species, form, shiny, gender);
+            FieldSystem_UnkSub108_Set(fieldSystem->unk108, mon, species, GetMonData(mon, MON_DATA_PERSONALITY, NULL));
 
             fieldSystem->followMon.mapObject = FollowMon_CreateMapObject(mapObjectManager, species, form, gender, direction, x, y, shiny);
             fieldSystem->followMon.active = TRUE;
@@ -1559,6 +1985,37 @@ LocalMapObject *FollowMon_InitMapObject(MapObjectManager *mapObjectManager, int 
     return fieldSystem->followMon.mapObject;
 }
 
+// ROOT-CAUSE FIX (2026-09-23): computes gender the same way GetGenderBySpeciesAndPersonality_
+// PreloadedPersonal (src/pokemon.c) does, but from the static sSpeciesGenderRatios table instead of a
+// freshly-loaded BASE_STATS - i.e. this is the exact fix ENTRY L already established for this exact
+// trap (and ENTRY AC established for abilities), applied to the one place in this file that still had it.
+// GetMonGender(mon) -> GetBoxMonGender -> GetGenderBySpeciesAndPersonality calls
+// AllocAndLoadMonPersonal(species, HEAP_ID_DEFAULT) internally - a Heap_Alloc PLUS a ROM filesystem read,
+// on every single call. FollowMon_ChangeMon's only caller (src/field_warp_tasks.c, sub_0205323C) runs
+// exactly when the field is being restored after returning from battle - a moment already busy tearing
+// down/rebuilding map objects, the bottom-screen UI, and other field state, i.e. precisely the kind of
+// "hot, resource-contended moment" ENTRY L's own writeup warned this exact call chain is dangerous in.
+// A repeated hit here (once per battle, for the rest of a play session) is a much better fit for
+// intermittent, cumulative-feeling hangs in UNRELATED systems (a blank bottom-screen UI, a stuck battle
+// transition, a hung Pokemon Center prompt - none of which have anything to do with gender lookups on
+// their face) than treating each as its own isolated bug: ENTRY L saw this identical shape of symptom
+// (including, specifically, "black screen leaving the Pokemon Center") from this identical root cause,
+// in a different follow_mon.c function, in this same project, before.
+static u8 FollowMon_GetGenderCheap(u16 species, u32 pid) {
+    u8 ratio = (species < SPECIES_GENDER_RATIOS_TABLE_COUNT) ? sSpeciesGenderRatios[species] : MON_RATIO_UNKNOWN;
+
+    switch (ratio) {
+    case MON_RATIO_MALE:
+        return MON_MALE;
+    case MON_RATIO_FEMALE:
+        return MON_FEMALE;
+    case MON_RATIO_UNKNOWN:
+        return MON_GENDERLESS;
+    default:
+        return (ratio > (u8)pid) ? MON_FEMALE : MON_MALE;
+    }
+}
+
 void FollowMon_ChangeMon(MapObjectManager *mapObjectManager, u32 mapno) {
     FieldSystem *fieldSystem = MapObjectManager_GetFieldSystem(mapObjectManager);
     Party *party = SaveArray_Party_Get(fieldSystem->saveData);
@@ -1584,14 +2041,14 @@ void FollowMon_ChangeMon(MapObjectManager *mapObjectManager, u32 mapno) {
                 fieldSystem->followMon.unk15 = 1;
             } else {
                 form = GetMonData(mon, MON_DATA_FORM, NULL);
-                gender = GetMonGender(mon);
+                gender = FollowMon_GetGenderCheap(species, GetMonData(mon, MON_DATA_PERSONALITY, NULL));
                 shiny = MonIsShiny(mon);
                 fieldSystem->followMon.mapObject = followPokeObj;
                 fieldSystem->followMon.active = TRUE;
 
                 FieldSystem_SetFollowerPokeParam(fieldSystem, species, form, shiny, gender);
                 FollowMon_SetObjectParams(followPokeObj, species, form, shiny);
-                MapObject_SetSpriteID(fieldSystem->followMon.mapObject, FollowMon_GetSpriteID(species, form, gender));
+                FollowMon_SetSpriteID(fieldSystem->followMon.mapObject, FollowMon_GetSpriteID(species, form, gender));
                 playerState = PlayerAvatar_GetState(fieldSystem->playerAvatar);
 
                 if (playerState == PLAYER_STATE_WALKING || playerState == PLAYER_STATE_ROCKET) {
@@ -1620,12 +2077,12 @@ void FollowMon_ChangeMon(MapObjectManager *mapObjectManager, u32 mapno) {
 
             if (followPokeObj != NULL) {
                 form = GetMonData(mon, MON_DATA_FORM, NULL);
-                gender = GetMonGender(mon);
+                gender = FollowMon_GetGenderCheap(species, GetMonData(mon, MON_DATA_PERSONALITY, NULL));
                 shiny = MonIsShiny(mon);
 
                 FieldSystem_SetFollowerPokeParam(fieldSystem, species, form, shiny, gender);
                 FollowMon_SetObjectParams(followPokeObj, species, form, shiny);
-                MapObject_SetSpriteID(followPokeObj, FollowMon_GetSpriteID(species, form, gender));
+                FollowMon_SetSpriteID(followPokeObj, FollowMon_GetSpriteID(species, form, gender));
 
                 fieldSystem->followMon.mapObject = followPokeObj;
                 fieldSystem->followMon.active = TRUE;

@@ -27991,11 +27991,13 @@ _021F365A:
 	str r0, [sp]
 	mov r0, #0xa
 	str r0, [sp, #4]
+	ldr r0, [sp, #0x30]
+	str r0, [sp, #8]
 	add r1, sp, #0x14
 	ldrh r0, [r1, #0x10]
 	ldrh r1, [r1, #0x14]
 	mov r2, #5
-	bl GfGfxLoader_GXLoadPal
+	bl GfGfxLoader_GXLoadPalRotated
 	add r0, r5, #0
 	bl Heap_Free
 	add sp, #0x34

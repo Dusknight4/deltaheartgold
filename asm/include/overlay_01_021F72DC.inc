@@ -39,6 +39,7 @@
 .public MapObject_ClearHeldMovement
 .public sub_02064084
 .public FollowMon_GetSpriteID
+.public FollowMon_RefreshModelPalette
 .public FollowMon_SetObjectParams
 .public FieldSystem_SetFollowerPokeParam
 .public FieldSystem_UnkSub108_Set

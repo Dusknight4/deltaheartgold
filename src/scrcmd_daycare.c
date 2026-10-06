@@ -10,8 +10,10 @@
 extern void ov01_021F9048(LocalMapObject *map_object);
 extern void FollowMon_SetObjectParams(LocalMapObject *mapObject, u16 species, u8 form, BOOL shiny);
 extern u32 FollowMon_GetSpriteID(int species, u16 form, u32 gender);
+extern void FollowMon_SetObjectPersonality(LocalMapObject *mapObject, u32 personality);
+extern void FollowMon_ClearObjectPersonality(LocalMapObject *mapObject);
 
-static LocalMapObject *CreateDaycareMonSpriteInternal(MapObjectManager *object_man, u8 dc_mon_idx, u16 species, u8 form, u32 gender, u32 direction, u32 x, u32 y, u32 map_no, BOOL shiny);
+static LocalMapObject *CreateDaycareMonSpriteInternal(MapObjectManager *object_man, u8 dc_mon_idx, u16 species, u8 form, u32 gender, u32 direction, u32 x, u32 y, u32 map_no, BOOL shiny, u32 personality);
 
 BOOL ScrCmd_BufferDaycareMonNicks(ScriptContext *ctx) {
     SaveData *saveData = ctx->fieldSystem->saveData;
@@ -160,6 +162,10 @@ BOOL ScrCmd_UpdateDaycareMonObjects(ScriptContext *ctx) {
     for (s32 dc_mon_idx = 0, y = 5, x = 8; dc_mon_idx < 2; dc_mon_idx++, y += 4, x += 2) {
         LocalMapObject *mon_map_object = MapObjectManager_GetFirstActiveObjectByID(fieldSystem->mapObjectManager, obj_daycare_poke_1 + dc_mon_idx);
         if (mon_map_object) {
+            // QOL (2026-09-26): clear this object's registered personality before deleting it, so a
+            // later, unrelated object that happens to be allocated at the same freed pointer doesn't
+            // inherit this one's stale color rotation.
+            FollowMon_ClearObjectPersonality(mon_map_object);
             MapObject_Delete(mon_map_object);
         }
 
@@ -172,14 +178,15 @@ BOOL ScrCmd_UpdateDaycareMonObjects(ScriptContext *ctx) {
         species = GetBoxMonData(boxMon, MON_DATA_SPECIES, NULL);
         u32 gender = GetBoxMonData(boxMon, MON_DATA_GENDER, NULL);
         BOOL shiny = BoxMonIsShiny(boxMon);
+        u32 personality = GetBoxMonData(boxMon, MON_DATA_PERSONALITY, NULL);
 
-        CreateDaycareMonSpriteInternal(fieldSystem->mapObjectManager, (u8)dc_mon_idx, species, form, gender, 1, x, y, fieldSystem->location->mapId, shiny);
+        CreateDaycareMonSpriteInternal(fieldSystem->mapObjectManager, (u8)dc_mon_idx, species, form, gender, 1, x, y, fieldSystem->location->mapId, shiny, personality);
     }
 
     return FALSE;
 }
 
-static LocalMapObject *CreateDaycareMonSpriteInternal(MapObjectManager *object_man, u8 dc_mon_idx, u16 species, u8 form, u32 gender, u32 direction, u32 x, u32 y, u32 map_no, BOOL shiny) {
+static LocalMapObject *CreateDaycareMonSpriteInternal(MapObjectManager *object_man, u8 dc_mon_idx, u16 species, u8 form, u32 gender, u32 direction, u32 x, u32 y, u32 map_no, BOOL shiny, u32 personality) {
     u32 sprite_id = FollowMon_GetSpriteID(species, form, gender);
     LocalMapObject *lmo = MapObject_Create(object_man, x, y, direction, sprite_id, 11, map_no);
     GF_ASSERT(lmo != NULL);
@@ -190,6 +197,10 @@ static LocalMapObject *CreateDaycareMonSpriteInternal(MapObjectManager *object_m
     MapObject_SetScriptID(lmo, 0);
     MapObject_SetParam(lmo, 0, 2);
     FollowMon_SetObjectParams(lmo, species, (u32)form, shiny);
+    // QOL (2026-09-26): register this pen mon's real personality so FollowMon_RefreshModelPalette
+    // (src/follow_mon.c) applies the same color rotation to it that the player's own follower already
+    // gets - previously every Day Care pen mon only ever showed its raw, unrotated palette.
+    FollowMon_SetObjectPersonality(lmo, personality);
     MapObject_SetXRange(lmo, -1);
     MapObject_SetYRange(lmo, -1);
     MapObject_SetFlagsBits(lmo, MAPOBJECTFLAG_START_MOVEMENT);

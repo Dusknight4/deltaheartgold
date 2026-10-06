@@ -518,6 +518,9 @@ _021F76CC:
 	add r1, r5, #0
 	bl ov01_02205808
 _021F76E0:
+	add r0, r5, #0
+	ldr r1, [r4]
+	bl FollowMon_RefreshModelPalette
 	ldr r0, [r4]
 	add r1, r4, #4
 	bl ov01_021F9630
@@ -713,6 +716,9 @@ _021F7852:
 	bl ov01_02205808
 _021F7866:
 	add r0, r5, #0
+	add r1, r6, #0
+	bl FollowMon_RefreshModelPalette
+	add r0, r5, #0
 	bl MapObject_GetFacingDirection
 	add r7, r0, #0
 	mov r0, #1
@@ -776,6 +782,9 @@ _021F78D6:
 	bl ov01_02205808
 _021F78EA:
 	add r0, r5, #0
+	add r1, r6, #0
+	bl FollowMon_RefreshModelPalette
+	add r0, r5, #0
 	bl MapObject_GetFacingDirection
 	add r7, r0, #0
 	mov r0, #1
@@ -828,6 +837,9 @@ ov01_021F7918: ; 0x021F7918
 	add r2, r6, #0
 	bl ov01_02205808
 _021F7958:
+	add r0, r5, #0
+	add r1, r6, #0
+	bl FollowMon_RefreshModelPalette
 	add r0, r5, #0
 	add r1, r6, #0
 	bl ov01_021FA3E8

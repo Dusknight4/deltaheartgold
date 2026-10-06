@@ -213,6 +213,10 @@ void Pokepic_SetAttr(Pokepic *pokepic, int attr, int value);
 
 // Returns the Pokepic attribute by index
 int Pokepic_GetAttr(Pokepic *pokepic, int attr);
+void PersonalityRotatePalette(u16 *palette, int count, u32 personality);
+void PersonalityRotatePaletteWithHueOffsets(u16 *palette, int count, u32 personality, const s8 *hueOffsetsHalfDeg);
+struct PaletteData;
+void Pokepic_RotateBattlePalette(struct PaletteData *plttData, int bufferId, u16 pos, Pokepic *pokepic);
 
 // Adds addend value to Pokepic attribute by index
 void Pokepic_AddAttr(Pokepic *pokepic, int attr, int addend);

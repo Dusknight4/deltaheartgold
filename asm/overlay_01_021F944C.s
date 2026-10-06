@@ -2573,6 +2573,9 @@ _021FA618:
 ov01_021FA61C: ; 0x021FA61C
 	push {r3, r4, r5, r6, lr}
 	sub sp, #4
+	push {r0, r1, r2, r3}
+	bl FollowMon_OnModelLoaded
+	pop {r0, r1, r2, r3}
 	add r5, r0, #0
 	mov r0, #4
 	str r0, [sp]

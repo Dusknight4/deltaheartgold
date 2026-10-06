@@ -15,6 +15,7 @@
 #include "launch_application.h"
 #include "obj_char_transfer.h"
 #include "obj_pltt_transfer.h"
+#include "pokepic.h"
 #include "render_text.h"
 #include "render_window.h"
 #include "screen_fade.h"
@@ -1183,6 +1184,9 @@ static void createMonSprites(struct ChooseStarterAppWork *work) {
             0);
         spriteData->charDatas[i] = sub_0201442C((NarcId)spriteData->pokepicTemplate.narcID, spriteData->pokepicTemplate.charDataID, work->heapID);
         spriteData->plttDatas[i] = sub_02014450((NarcId)spriteData->pokepicTemplate.narcID, spriteData->pokepicTemplate.palDataID, work->heapID);
+        // Custom color mod: the starter's palette is already correctly shiny-or-not (MonIsShiny above), but was never
+        // personality-rotated like every other screen (status/box/battle/follower). Rotate it in place here.
+        PersonalityRotatePalette((u16 *)spriteData->plttDatas[i], 16, GetMonData(work->choices[i], MON_DATA_PERSONALITY, NULL));
         loadOneMonObj(spriteData->charResMan, spriteData->plttResMan, spriteData->charDatas[i], spriteData->plttDatas[i], i);
         createOneMonRender(spriteData, i, work->heapID);
     }

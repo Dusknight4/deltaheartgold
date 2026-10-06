@@ -15,6 +15,7 @@
 .public GfGfxLoader_LoadCharData
 .public GfGfxLoader_LoadScrnData
 .public GfGfxLoader_GXLoadPal
+.public GfGfxLoader_GXLoadPalRotated
 .public GfGfxLoader_GXLoadPalWithSrcOffset
 .public GfGfxLoader_PartiallyLoadPalette
 .public GfGfxLoader_LoadImageMapping

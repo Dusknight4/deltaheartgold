@@ -4,6 +4,7 @@
 
 #include "bg_window.h"
 #include "nnsys.h"
+#include "pokepic.h"
 
 static u32 GfGfxLoader_LoadCharDataInternal(void *data, BgConfig *bgConfig, GFBgLayer layer, u32 tileStart, u32 szByte);
 static void GfGfxLoader_LoadScrnDataInternal(void *data, BgConfig *bgConfig, GFBgLayer layer, u32 tileStart, u32 szByte);
@@ -36,6 +37,64 @@ void GfGfxLoader_GXLoadPalWithSrcOffset(NarcId narcId, s32 memberNo, enum GFPalL
     void *data;
     data = GfGfxLoader_LoadFromNarc(narcId, memberNo, FALSE, heapID, TRUE);
     GfGfxLoader_GXLoadPalWithSrcOffsetInternal(data, location, srcOffset, palSlotOffset, szByte);
+}
+
+// Same as GfGfxLoader_GXLoadPal, but rotates the mon palette by personality before uploading it.
+// Only meant for a single 16-color mon palette (szByte 0x20), e.g. the PC box mon sprite.
+// NOTE: NNS_G2dGetUnpackedPaletteData is NOT idempotent (it adds the file base address to pRawData on
+// every call), so the file must be unpacked exactly once. That is why this does not simply rotate and
+// then call GfGfxLoader_GXLoadPalWithSrcOffsetInternal (which unpacks again).
+void GfGfxLoader_GXLoadPalRotated(NarcId narcId, s32 memberNo, enum GFPalLoadLocation location, enum GFPalSlotOffset palSlotOffset, u32 szByte, enum HeapID heapID, u32 personality) {
+    static void (*const loadFuncs[])(const void *pSrc, u32 offset, u32 szByte) = {
+        GX_LoadBGPltt,
+        GX_LoadOBJPltt,
+        GX_LoadBGExtPltt,
+        GX_LoadOBJExtPltt,
+        GXS_LoadBGPltt,
+        GXS_LoadOBJPltt,
+        GXS_LoadBGExtPltt,
+        GXS_LoadOBJExtPltt,
+    };
+    void *data;
+    NNSG2dPaletteData *pPlttData;
+
+    data = GfGfxLoader_LoadFromNarc(narcId, memberNo, FALSE, heapID, TRUE);
+    if (data == NULL) {
+        return;
+    }
+    if (NNS_G2dGetUnpackedPaletteData(data, &pPlttData)) {
+        if (szByte == 0) {
+            szByte = pPlttData->szByte;
+        }
+        PersonalityRotatePalette((u16 *)pPlttData->pRawData, szByte / 2, personality);
+        DC_FlushRange(pPlttData->pRawData, szByte);
+        switch (location) {
+        case GF_PAL_LOCATION_MAIN_BGEXT:
+            GX_BeginLoadBGExtPltt();
+            loadFuncs[location](pPlttData->pRawData, palSlotOffset, szByte);
+            GX_EndLoadBGExtPltt();
+            break;
+        case GF_PAL_LOCATION_SUB_BGEXT:
+            GXS_BeginLoadBGExtPltt();
+            loadFuncs[location](pPlttData->pRawData, palSlotOffset, szByte);
+            GXS_EndLoadBGExtPltt();
+            break;
+        case GF_PAL_LOCATION_MAIN_OBJEXT:
+            GX_BeginLoadOBJExtPltt();
+            loadFuncs[location](pPlttData->pRawData, palSlotOffset, szByte);
+            GX_EndLoadOBJExtPltt();
+            break;
+        case GF_PAL_LOCATION_SUB_OBJEXT:
+            GXS_BeginLoadOBJExtPltt();
+            loadFuncs[location](pPlttData->pRawData, palSlotOffset, szByte);
+            GXS_EndLoadOBJExtPltt();
+            break;
+        default:
+            loadFuncs[location](pPlttData->pRawData, palSlotOffset, szByte);
+            break;
+        }
+    }
+    Heap_Free(data);
 }
 
 void GfGfxLoader_PartiallyLoadPalette(NarcId narcId, s32 memberNo, NNS_G2D_VRAM_TYPE type, u32 baseAddr, enum HeapID heapID, NNSG2dImagePaletteProxy *pPltProxy) {

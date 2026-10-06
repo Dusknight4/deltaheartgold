@@ -1108,11 +1108,20 @@ _0224720E:
 	mov r0, #0x38
 	ldr r3, [sp, #0x18]
 	str r0, [sp, #4]
+	; QOL (2026-09-26): this draws one mon's silhouette into the trade sequence's BG-layer vertical
+	; slide-past effect. The template at sp+0x38 (populated by GetBoxmonSpriteCharAndPlttNarcIds above)
+	; already carries the correct personality (and the shiny-aware palDataID, which is why shininess
+	; already displayed correctly here) - but this call used the plain, non-rotating GfGfxLoader_GXLoadPal
+	; instead of GfGfxLoader_GXLoadPalRotated, so the personality was computed and then silently dropped.
+	; [sp+8] is safe to reuse here: every earlier use of it in this function has already completed by
+	; this point, and nothing reads it again afterward.
+	ldr r0, [sp, #0x44] ; template.personality (template@sp+0x38, offset 0xC)
+	str r0, [sp, #8]
 	add r1, sp, #0x28
 	ldrh r0, [r1, #0x10]
 	ldrh r1, [r1, #0x14]
 	lsl r3, r3, #5
-	bl GfGfxLoader_GXLoadPal
+	bl GfGfxLoader_GXLoadPalRotated
 	add sp, #0x48
 	pop {r3, r4, r5, r6, r7, pc}
 	.balign 4, 0

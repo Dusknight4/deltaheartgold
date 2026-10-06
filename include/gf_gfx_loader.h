@@ -10,6 +10,7 @@ u32 GfGfxLoader_LoadCharData(NarcId narcId, s32 memberNo, BgConfig *bgConfig, GF
 void GfGfxLoader_LoadScrnData(NarcId narcId, s32 memberNo, BgConfig *bgConfig, GFBgLayer layer, u32 tileStart, u32 szByte, BOOL isCompressed, enum HeapID heapID);
 void GfGfxLoader_GXLoadPal(NarcId narcId, s32 memberNo, enum GFPalLoadLocation location, enum GFPalSlotOffset palSlotOffset, u32 szByte, enum HeapID heapID);
 void GfGfxLoader_GXLoadPalWithSrcOffset(NarcId narcId, s32 memberNo, enum GFPalLoadLocation location, u32 srcOffset, enum GFPalSlotOffset palSlotOffset, u32 szByte, enum HeapID heapID);
+void GfGfxLoader_GXLoadPalRotated(NarcId narcId, s32 memberNo, enum GFPalLoadLocation location, enum GFPalSlotOffset palSlotOffset, u32 szByte, enum HeapID heapID, u32 personality);
 void GfGfxLoader_PartiallyLoadPalette(NarcId narcId, s32 memberNo, NNS_G2D_VRAM_TYPE type, u32 baseAddr, enum HeapID heapID, NNSG2dImagePaletteProxy *pPltProxy);
 u32 GfGfxLoader_LoadImageMapping(NarcId narcId, s32 memberNo, BOOL isCompressed, GFBgLayer layer, u32 szByte, NNS_G2D_VRAM_TYPE type, u32 baseAddr, enum HeapID heapID, NNSG2dImageProxy *pImgProxy);
 

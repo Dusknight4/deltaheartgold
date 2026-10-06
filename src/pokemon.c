@@ -2186,7 +2186,11 @@ void GetBoxmonSpriteCharAndPlttNarcIds(PokepicTemplate *pokepicTemplate, BoxPoke
 void GetMonSpriteCharAndPlttNarcIdsEx(PokepicTemplate *pokepicTemplate, u16 species, u8 gender, u8 whichFacing, u8 shiny, u8 form, u32 personality) {
     pokepicTemplate->species = SPECIES_NONE;
     pokepicTemplate->isAnimated = FALSE;
-    pokepicTemplate->personality = 0;
+    // QOL (2026-09-26): personality was never set anywhere in this function (not even the
+    // non-form default case, which only calls sub_02070560 - that helper doesn't touch personality
+    // either), so no species ever got palette rotation through this path. See the matching fix in
+    // GetMonSpriteCharAndPlttNarcIdsEx above.
+    pokepicTemplate->personality = personality;
     form = sub_02070438(species, form);
     switch (species) {
     case SPECIES_BURMY:
@@ -2362,7 +2366,11 @@ void sub_02070560(PokepicTemplate *pokepicTemplate, u16 species, u8 whichFacing,
 void DP_GetMonSpriteCharAndPlttNarcIdsEx(PokepicTemplate *pokepicTemplate, u16 species, u8 gender, u8 whichFacing, u8 shiny, u8 form, u32 personality) {
     pokepicTemplate->species = SPECIES_NONE;
     pokepicTemplate->isAnimated = FALSE;
-    pokepicTemplate->personality = 0;
+    // QOL (2026-09-26): every special-form species below used to leave personality at 0, so none of
+    // them ever got personality-based palette rotation applied to their 2D sprite - only the default
+    // (no-alternate-form) case did. The 3D overworld follower model already applies this rotation
+    // correctly regardless of form, so the 2D sprite path is made to match here.
+    pokepicTemplate->personality = personality;
     form = sub_02070438(species, form);
     switch (species) {
     case SPECIES_BURMY:
@@ -2396,6 +2404,7 @@ void DP_GetMonSpriteCharAndPlttNarcIdsEx(PokepicTemplate *pokepicTemplate, u16 s
         pokepicTemplate->palDataID = (u16)(shiny + 0xAA + form * 2);
         break;
     case SPECIES_CASTFORM:
+        pokepicTemplate->personality = personality;
         pokepicTemplate->narcID = NARC_pbr_otherpoke;
         pokepicTemplate->charDataID = (u16)(whichFacing * 2 + 0x40 + form);
         pokepicTemplate->palDataID = (u16)(shiny * 4 + 0x8A + form);
@@ -2461,7 +2470,6 @@ void DP_GetMonSpriteCharAndPlttNarcIdsEx(PokepicTemplate *pokepicTemplate, u16 s
         if (species == SPECIES_SPINDA && whichFacing == MON_PIC_FACING_FRONT) {
             pokepicTemplate->species = SPECIES_SPINDA;
             pokepicTemplate->isAnimated = FALSE;
-            pokepicTemplate->personality = personality;
         }
         break;
     }
