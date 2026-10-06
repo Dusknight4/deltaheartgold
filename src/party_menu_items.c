@@ -901,9 +901,9 @@ void PartyMenu_LearnMoveToSlot(PartyMenu *partyMenu, Pokemon *mon, int moveIdx) 
     data = GetMoveMaxPP(partyMenu->args->moveId, 0);
     SetMonData(mon, MON_DATA_MOVE1_PP + moveIdx, &data);
     if (partyMenu->args->itemId != ITEM_NONE) {
-        if (!MoveIsHM(partyMenu->args->moveId)) {
-            Bag_TakeItem(partyMenu->args->bag, partyMenu->args->itemId, 1, HEAP_ID_PARTY_MENU);
-        }
+        // QOL (2026-09-24): TMs used to be consumed on use (HMs were already exempt via MoveIsHM,
+        // vanilla's normal "HMs are reusable, TMs are not" rule) - now both are reusable, so the
+        // item is never taken here regardless of move type.
         MonApplyFriendshipMod(mon, FRIENDSHIP_EVENT_LEARN_TMHM, PartyMenu_GetCurrentMapSec(partyMenu));
         ApplyMonMoodModifier(mon, MON_MOOD_MODIFIER_LEARN_TMHM);
     }

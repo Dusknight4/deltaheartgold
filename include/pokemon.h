@@ -189,6 +189,7 @@ void MonEncryptSegment(void *data, u32 size, u32 seed);
 void MonDecryptSegment(void *data, u32 size, u32 seed);
 u32 CalcMonChecksum(void *_data, u32 size);
 int ResolveMonForm(int species, int form);
+BOOL SplitFormSpecies(u16 formSpecies, u16 *species, u8 *form);
 u32 MaskOfFlagNo(int flagno);
 BOOL SpeciesIsMythical(u16 species);
 BOOL MonCheckFrontierIneligibility(Pokemon *mon);

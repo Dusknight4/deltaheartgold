@@ -160,6 +160,16 @@ SysTask *FieldSystem_CreateViewPhotoTask(FieldSystem *fieldSystem) {
 }
 
 void FieldSystem_DestroyViewPhotoTask(FieldSystem *fieldSystem) {
+    // HARDWARE CRASH FIX (2026-09-23, found while scouting for the same bug class as
+    // systask_environment.c's DestroySysTaskAndEnvironment): fieldSystem->unk_D8 is only non-NULL while a
+    // photo is actually being viewed, and this function sets it back to NULL at the end - implying it's
+    // meant to be safely callable even when nothing is active. Without this guard,
+    // SysTask_GetData(NULL) (task->data, struct offset 0x10) crashes unconditionally otherwise, matching
+    // this session's real-hardware "Error: Data Abort!" report exactly.
+    if (fieldSystem->unk_D8 == NULL) {
+        return;
+    }
+
     ViewPhotoSysTaskData *viewPhoto = (ViewPhotoSysTaskData *)SysTask_GetData(fieldSystem->unk_D8);
 
     MenuInputStateMgr_SetState(&fieldSystem->menuInputState, viewPhoto->menuInputState);

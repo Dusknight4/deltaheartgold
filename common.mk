@@ -220,7 +220,9 @@ else
 endif
 
 RESPONSE_TEMPLATE    := $(PROJECT_ROOT)/mwldarm.response.template
-RESPONSE_TEMPLATE_NT := $(PROJECT_ROOT_NT)/mwldarm.response.template
+# (2026-10-05, ENTRY DN) PROJECT_ROOT_NT is only set when NODEP is empty; the launcher builds with NODEP=1, so fall back to PROJECT_ROOT
+# (msys converts the path for the native makelcf.exe) - without this any edit to main.lsf fails with "Cannot open C:/msys64/mwldarm.response.template".
+RESPONSE_TEMPLATE_NT := $(if $(PROJECT_ROOT_NT),$(PROJECT_ROOT_NT),$(PROJECT_ROOT))/mwldarm.response.template
 
 $(RESPONSE): $(LSF) $(RESPONSE_TEMPLATE)
 	$(WINE) $(MAKELCF) $(MAKELCF_FLAGS) $< $(RESPONSE_TEMPLATE_NT) $@

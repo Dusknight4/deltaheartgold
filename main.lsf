@@ -325,7 +325,6 @@ Static main
     Object src/choose_starter.o
     Object asm/unk_020961D8.o
     Object src/error_message_reset.o
-    Object src/sin_vcount.o
     Object asm/frontier.o
 	Object src/unk_020968B0.o
     Object asm/unk_02096910.o
@@ -1331,24 +1330,6 @@ Overlay voltorb_flip
 Overlay ds_protect
 {
     After OVY_31
-	Object lib/dsprot/dsprot_main_encrypted.o
-	Object lib/dsprot/dsprot_main_decrypter_encoded.o
-	Object lib/dsprot/dsprot_main_decrypter_decoder.o
-	Object lib/dsprot/extra.o
-	Object lib/dsprot/integrity_encrypted.o
-	Object lib/dsprot/integrity_decrypter_encoded.o
-	Object lib/dsprot/integrity_decrypter_decoder.o
-	Object lib/dsprot/encryptor_encoded.o
-	Object lib/dsprot/encryptor_decoder.o
-	Object lib/dsprot/mac_owner_encrypted.o
-	Object lib/dsprot/mac_owner_decrypter_encoded.o
-	Object lib/dsprot/rom_util_encrypted.o
-	Object lib/dsprot/rom_util_decrypter_encoded.o
-	Object lib/dsprot/rom_test_encrypted.o
-	Object lib/dsprot/rom_test_decrypter_encoded.o
-	Object lib/dsprot/coretests_decrypter_decoder.o
-	Object lib/dsprot/rc4_encoded.o
-	Object lib/dsprot/rc4_decoder.o
 }
 Overlay OVY_124
 {

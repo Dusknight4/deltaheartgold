@@ -563,6 +563,22 @@ u16 Pokedex_CountDexOwned(Pokedex *pokedex) {
     }
 }
 
+// BUGFIX (2026-10-04): LoadSpeciesToJohtoDexNoLUT returns NULL if its ~1KB table cannot be allocated (HEAP_ID_3 and the
+// default heap both full), and these counting loops dereferenced it unchecked. Fall back to reading the one needed entry
+// straight from the NARC (no heap needed, just slower) so the count stays correct instead of crashing.
+static BOOL JohtoDexHasSpecies(const u16 *johto_species, u16 species) {
+    if (johto_species != NULL) {
+        return johto_species[species] != J_SPECIES_NONE;
+    }
+    return SpeciesToJohtoDexNo(species) != J_SPECIES_NONE;
+}
+
+static void FreeJohtoSpeciesTable(u16 *johto_species) {
+    if (johto_species != NULL) {
+        Heap_Free(johto_species);
+    }
+}
+
 u16 Pokedex_CountJohtoDexOwned(Pokedex *pokedex) {
     u16 *johto_species;
     u16 i, n;
@@ -570,11 +586,11 @@ u16 Pokedex_CountJohtoDexOwned(Pokedex *pokedex) {
     johto_species = LoadSpeciesToJohtoDexNoLUT();
     n = 0;
     for (i = 1; i <= NATIONAL_DEX_COUNT; i++) {
-        if (Pokedex_CheckMonCaughtFlag(pokedex, i) == TRUE && johto_species[i] != J_SPECIES_NONE) {
+        if (Pokedex_CheckMonCaughtFlag(pokedex, i) == TRUE && JohtoDexHasSpecies(johto_species, i)) {
             n++;
         }
     }
-    Heap_Free(johto_species);
+    FreeJohtoSpeciesTable(johto_species);
     return n;
 }
 
@@ -585,11 +601,11 @@ u16 Pokedex_CountJohtoDexSeen(Pokedex *pokedex) {
     johto_species = LoadSpeciesToJohtoDexNoLUT();
     n = 0;
     for (i = 1; i <= NATIONAL_DEX_COUNT; i++) {
-        if (Pokedex_CheckMonSeenFlag(pokedex, i) == TRUE && johto_species[i] != J_SPECIES_NONE) {
+        if (Pokedex_CheckMonSeenFlag(pokedex, i) == TRUE && JohtoDexHasSpecies(johto_species, i)) {
             n++;
         }
     }
-    Heap_Free(johto_species);
+    FreeJohtoSpeciesTable(johto_species);
     return n;
 }
 
@@ -622,11 +638,11 @@ u16 Pokedex_CountJohtoOwned_ExcludeMythical(Pokedex *pokedex) {
     johto_dex = LoadSpeciesToJohtoDexNoLUT();
     n = 0;
     for (i = 1; i <= NATIONAL_DEX_COUNT; i++) {
-        if (Pokedex_CheckMonCaughtFlag(pokedex, i) == TRUE && johto_dex[i] != J_SPECIES_NONE && SpeciesIsNotJohtoMythical(i) == TRUE) {
+        if (Pokedex_CheckMonCaughtFlag(pokedex, i) == TRUE && JohtoDexHasSpecies(johto_dex, i) && SpeciesIsNotJohtoMythical(i) == TRUE) {
             n++;
         }
     }
-    Heap_Free(johto_dex);
+    FreeJohtoSpeciesTable(johto_dex);
     return n;
 }
 

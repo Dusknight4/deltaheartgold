@@ -279,9 +279,7 @@ BOOL MonIsFromTogepiEgg(Pokemon *mon, SaveData *saveData) {
     PlayerProfile *profile = Save_PlayerData_GetProfile(saveData);
     SAVE_MISC_DATA *misc = Save_Misc_Get(saveData);
     u16 species = GetMonData(mon, MON_DATA_SPECIES, NULL);
-    if (!(species == SPECIES_TOGEPI
-            || species == SPECIES_TOGETIC
-            || species == SPECIES_TOGEKISS)) {
+    if (species != SPECIES_DEOXYS) {
         return FALSE;
     }
     // For some reason, the result of calls to GetMonData must be assigned

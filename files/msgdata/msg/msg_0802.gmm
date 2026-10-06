@@ -604,7 +604,7 @@
 	</row>
 	<row id="msg_0802_00144" index="144">
 		<attribute name="window_context_name">used</attribute>
-		<language name="English">Pokédex registration completed.</language>
+		<language name="English">Ability: {STRVAR_1 0, 0, 0}</language>
 	</row>
 	<row id="msg_0802_00145" index="145">
 		<attribute name="window_context_name">used</attribute>

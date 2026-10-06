@@ -94,6 +94,11 @@ void BattleSystem_GetBattleMon(BattleSystem *battleSystem, BattleContext *ctx, i
     ctx->battleMons[battlerId].type2 = GetMonData(mon, MON_DATA_TYPE_2, NULL);
 
     ctx->battleMons[battlerId].gender = GetMonGender(mon);
+    // ENTRY AG: reverted to the real value. Forcing this FALSE (to suppress the intro sparkle) turned out to also feed
+    // BattleController_EmitPokemonSendOut (asm/overlay_12_battle_controller.s), which packs this exact bit into the
+    // PokemonSendOut command that GetMonSpriteCharAndPlttNarcIdsEx uses to pick the sprite's palette (both front and
+    // back pics) - so a shiny mon's send-out sprite silently loaded its REGULAR palette instead of its shiny one.
+    // See Changelog.txt ENTRY AG for the trace and the resulting sparkle-vs-color trade-off.
     ctx->battleMons[battlerId].shiny = MonIsShiny(mon);
 
     if (BattleSystem_GetBattleType(battleSystem) & (BATTLE_TYPE_SAFARI | BATTLE_TYPE_PAL_PARK)) { // No abilities battle
@@ -1072,12 +1077,11 @@ u8 CheckSortSpeed(BattleSystem *battleSystem, BattleContext *ctx, int battlerId1
     }
 
     if (heldItem1 == HOLD_EFFECT_SOMETIMES_PRIORITY) {
-        if (ctx->unk_310C[battlerId1] % (100 / extra1) == 0) {
-            boostedPriority1 = 1;
+        // Quick Claw is the only item with this hold effect; make it proc 100% of the time.
+        boostedPriority1 = 1;
 
-            if (!flag) {
-                ctx->battleMons[battlerId1].unk88.quickClawFlag = TRUE;
-            }
+        if (!flag) {
+            ctx->battleMons[battlerId1].unk88.quickClawFlag = TRUE;
         }
     }
 
@@ -1131,12 +1135,11 @@ u8 CheckSortSpeed(BattleSystem *battleSystem, BattleContext *ctx, int battlerId1
     }
 
     if (heldItem2 == HOLD_EFFECT_SOMETIMES_PRIORITY) {
-        if (ctx->unk_310C[battlerId2] % (100 / extra2) == 0) {
-            boostedPriority2 = 1;
+        // Quick Claw is the only item with this hold effect; make it proc 100% of the time.
+        boostedPriority2 = 1;
 
-            if (!flag) {
-                ctx->battleMons[battlerId2].unk88.quickClawFlag = TRUE;
-            }
+        if (!flag) {
+            ctx->battleMons[battlerId2].unk88.quickClawFlag = TRUE;
         }
     }
 
@@ -5819,6 +5822,11 @@ int CalcMoveDamage(BattleSystem *battleSystem, BattleContext *ctx, u32 moveNo, u
         if ((fieldCondition & FIELD_CONDITION_SANDSTORM_ALL) && (calcTarget.type1 == TYPE_ROCK || calcTarget.type2 == TYPE_ROCK)) {
             monSpDef = monSpDef * 15 / 10;
         }
+        // QOL (2026-09-24): new mechanic, mirroring the vanilla Sandstorm/Rock Sp.Def boost above -
+        // Ice-type Pokemon get a 50% Defense boost during Hail.
+        if ((fieldCondition & FIELD_CONDITION_HAIL_ALL) && (calcTarget.type1 == TYPE_ICE || calcTarget.type2 == TYPE_ICE)) {
+            monDef = monDef * 15 / 10;
+        }
         if ((fieldCondition & FIELD_CONDITION_SUN_ALL) && CheckAbilityActive(battleSystem, ctx, CHECK_ABILITY_SAME_SIDE_HP, battlerIdAttacker, ABILITY_FLOWER_GIFT)) {
             monAtk = monAtk * 15 / 10;
         }
@@ -5976,7 +5984,7 @@ u32 TryCriticalHit(BattleSystem *battleSystem, BattleContext *ctx, int battlerId
     moveEffect = ctx->battleMons[battlerIdTarget].moveEffectFlags;
     ability = ctx->battleMons[battlerIdAttacker].ability;
 
-    critUp = (((status2 & STATUS2_FOCUS_ENERGY) != 0) * 2) + (item == HOLD_EFFECT_CRITRATE_UP) + critCnt + (ability == ABILITY_SUPER_LUCK) + 2 * ((item == HOLD_EFFECT_CHANSEY_CRITRATE_UP) && (species == SPECIES_CHANSEY)) + 2 * ((item == HOLD_EFFECT_FARFETCHD_CRITRATE_UP) && (species == SPECIES_FARFETCHD));
+    critUp = (((status2 & STATUS2_FOCUS_ENERGY) != 0) * 2) + (item == HOLD_EFFECT_CRITRATE_UP) + critCnt + (ability == ABILITY_SUPER_LUCK) + (ability == ABILITY_SNIPER) + 2 * ((item == HOLD_EFFECT_CHANSEY_CRITRATE_UP) && (species == SPECIES_CHANSEY)) + 2 * ((item == HOLD_EFFECT_FARFETCHD_CRITRATE_UP) && (species == SPECIES_FARFETCHD));
 
     if (critUp > 4) {
         critUp = 4;

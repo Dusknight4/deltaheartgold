@@ -40,7 +40,7 @@ static u8 LoadEggMoves(Pokemon *mon, u16 *dest);
 static void InheritMoves(Pokemon *egg, BoxPokemon *father, BoxPokemon *mother);
 static u16 Daycare_BreedingIncenseCheck(u16 species, Daycare *dayCare);
 static void Daycare_LightBallCheck(Pokemon *egg, Daycare *dayCare);
-static u16 Daycare_GetEggSpecies(Daycare *dayCare, u8 *gender_idx);
+static u16 Daycare_GetEggSpecies(Daycare *dayCare, u8 *gender_idx, u8 *speciesParentIdx);
 static void SetBreedEggStats(Pokemon *mon, u16 species, Daycare *dayCare, u32 otId, u8 form);
 static u8 GetEggCyclesToSubtract(Party *party);
 static BOOL EggGroupsHaveMatch(const u16 *eggGroups_1, const u16 *eggGroups_2);
@@ -517,21 +517,29 @@ static void Daycare_LightBallCheck(Pokemon *egg, Daycare *dayCare) {
     }
 }
 
-static u16 Daycare_GetEggSpecies(Daycare *dayCare, u8 *gender_idx) {
+static u16 Daycare_GetEggSpecies(Daycare *dayCare, u8 *gender_idx, u8 *speciesParentIdx) {
     u16 parent_species[NUM_DAYCARE_MONS];
     BoxPokemon *parents[NUM_DAYCARE_MONS];
+    BOOL dittoPair = FALSE;
 
     Daycare_GetBothBoxMonsPtr(dayCare, parents);
     for (u16 i = 0; i < NUM_DAYCARE_MONS; i++) {
         if ((parent_species[i] = GetBoxMonData(parents[i], MON_DATA_SPECIES, NULL)) == SPECIES_DITTO) {
             gender_idx[0] = i ^ 1;
             gender_idx[1] = i;
+            dittoPair = TRUE;
         } else if (GetBoxMonGender(parents[i]) == MON_FEMALE) {
             gender_idx[0] = i;
             gender_idx[1] = i ^ 1;
         }
     }
-    u16 mother = parent_species[gender_idx[0]];
+    // QOL (2026-09-26): 50/50 chance the egg follows the father's species line instead of the mother's
+    // (vanilla always used the mother's line) - per user request. Only applies to a real two-species
+    // pair; a Ditto pair has no "father species" to flip to, since Ditto itself never contributes a
+    // species. *speciesParentIdx tells the caller which parent actually donated the species/form, since
+    // gender_idx[0]/[1] must keep their normal mother/father meaning for move/IV inheritance below.
+    *speciesParentIdx = (!dittoPair && (LCRandom() % 2) == 0) ? gender_idx[1] : gender_idx[0];
+    u16 mother = parent_species[*speciesParentIdx];
     u16 eggSpecies = ReadFromPersonalPmsNarc(mother);
     if (eggSpecies == SPECIES_NIDORAN_F) {
         if (Save_Daycare_GetEggPID(dayCare) & EGG_GENDER_MALE) {
@@ -622,15 +630,150 @@ static void SetBreedEggStats(Pokemon *mon, u16 species, Daycare *dayCare, u32 ot
     String_Delete(name);
 }
 
+// ---------------------------------------------------------------------------------------------------------------------
+// Parental trait inheritance for eggs (QOL, 2026-09-26, per user request). Independent of the vanilla partial-IV
+// inheritance above (InheritIVs) and layered on top of it - each of 4 "traits" below can independently be inherited
+// from either parent, plus a separate chance for a full copy of all 4 from one parent. Trait <-> underlying data:
+//   - "coloration"   : the low 20 bits of PID (bits 0-9 hue, 10-14 saturation, 15-19 value - see
+//                       PersonalityRotatePalette in pokepic.c). The rest of the PID (ability-oddness, gender,
+//                       shininess-relevant bits) is left as whatever GenerateEggPID already rolled.
+//   - "ability byte" : the ability-donor seed is (defIV<<5)|spDefIV (see ApplyAbilityDonor in pokemon.c), so
+//                       inheriting it means copying the parent's Def and Sp. Def IVs.
+//   - "type1"        : the type-override seed is the HP IV (see ApplyCustomType in pokemon.c), so inheriting it
+//                       means copying the parent's HP IV.
+//   - "type2"        : the type-override seed is the Speed IV, so inheriting it means copying the parent's Speed IV.
+// The three IV-based traits (ability byte, type1, type2) each get an independent 10% chance per parent (5% for the
+// "everything from one parent" roll), doubled if either parent holds an Everstone, doubled again (4x total) if both do.
+// COLORATION IS DIFFERENT (QOL, 2026-10-04, per user request): it is a single standalone roll - 10% with no Everstone,
+// 15% with one, 20% with two - and the donor parent is picked 50/50. It is NOT part of the "full copy" roll and not
+// subject to the doubling above, so the egg's colour matches a parent's only that often (previously ~27% / 48% / 77%,
+// which made hatches look like they came in just two hues). Note: nature (PID % 25), gender (low PID byte) and the
+// ability slot (PID bit 0) are also derived from the PID bits a colour copy overwrites, so they get re-rolled on the
+// eggs that inherit colour; the user chose not to repair that (2026-10-04). Changing PID after the egg's blocks are
+// already populated must go through SetMonPersonality (not a raw SetMonData), since the block storage order is
+// shuffled by personality and a direct overwrite would desync stored data from the blocks GetSubstruct expects.
+#define PARENTAL_INHERIT_BASE_CHANCE              10
+#define PARENTAL_INHERIT_FULL_CHANCE              5
+#define PARENTAL_COLORATION_BASE_CHANCE           10 // percent with no Everstone
+#define PARENTAL_COLORATION_CHANCE_PER_EVERSTONE  5  // +5 per Everstone holder: 10 / 15 / 20 percent
+#define PARENTAL_COLORATION_MASK                  0xFFFFF // low 20 bits: hue (0-9) + saturation (10-14) + value (15-19)
+
+static u32 GetEverstoneCount(Daycare *dayCare) {
+    BoxPokemon *parents[NUM_DAYCARE_MONS];
+    u32 count = 0;
+    Daycare_GetBothBoxMonsPtr(dayCare, parents);
+    for (int i = 0; i < NUM_DAYCARE_MONS; i++) {
+        if (GetBoxMonData(parents[i], MON_DATA_HELD_ITEM, NULL) == ITEM_EVERSTONE) {
+            count++;
+        }
+    }
+    return count;
+}
+
+static u32 GetEverstoneInheritanceMultiplier(Daycare *dayCare) {
+    return 1 << GetEverstoneCount(dayCare);
+}
+
+static BOOL RollInheritChance(u32 basePercent, u32 everstoneMultiplier) {
+    return (LCRandom() % 100) < (basePercent * everstoneMultiplier);
+}
+
+static void InheritColorationFromParent(Pokemon *egg, BoxPokemon *parent) {
+    u32 parentPid = GetBoxMonData(parent, MON_DATA_PERSONALITY, NULL);
+    u32 eggPid = GetMonData(egg, MON_DATA_PERSONALITY, NULL);
+    eggPid = (eggPid & ~PARENTAL_COLORATION_MASK) | (parentPid & PARENTAL_COLORATION_MASK);
+    SetMonPersonality(egg, eggPid);
+}
+
+// QOL (2026-09-27, per user request): if the parent's own Def/SpDef IVs land outside the ability-donor's
+// valid seed range (0 or 987-1023 - see GetAbilityDonorSpecies in pokemon.c), the parent isn't currently
+// donating any ability at all, i.e. it's just showing its own species' normal ability. Copying that
+// out-of-range seed onto the egg verbatim would still land "no donor" there too, which for an egg of a
+// DIFFERENT species than the parent (evolution-stage breeding, Ditto crossings) means the egg falls back
+// to its own species' ability instead of reproducing what the parent showed - silently losing the trait
+// half the time instead of reliably passing something down. Re-encode the seed as the parent's own species
+// in the donor range's upper half (species + NATIONAL_DEX_COUNT) so this trait always donates the parent's
+// real ability consistently, whether or not the parent itself happened to have a donor active.
+static void InheritAbilityByteFromParent(Pokemon *egg, BoxPokemon *parent) {
+    u8 defIV = GetBoxMonData(parent, MON_DATA_DEF_IV, NULL);
+    u8 spDefIV = GetBoxMonData(parent, MON_DATA_SPDEF_IV, NULL);
+    u32 seed = (defIV << 5) | spDefIV;
+
+    if (seed == 0 || seed > NATIONAL_DEX_COUNT * 2) {
+        seed = GetBoxMonData(parent, MON_DATA_SPECIES, NULL) + NATIONAL_DEX_COUNT;
+        defIV = seed >> 5;
+        spDefIV = seed & 0x1F;
+    }
+
+    SetMonData(egg, MON_DATA_DEF_IV, &defIV);
+    SetMonData(egg, MON_DATA_SPDEF_IV, &spDefIV);
+}
+
+static void InheritType1FromParent(Pokemon *egg, BoxPokemon *parent) {
+    u8 iv = GetBoxMonData(parent, MON_DATA_HP_IV, NULL);
+    SetMonData(egg, MON_DATA_HP_IV, &iv);
+}
+
+static void InheritType2FromParent(Pokemon *egg, BoxPokemon *parent) {
+    u8 iv = GetBoxMonData(parent, MON_DATA_SPEED_IV, NULL);
+    SetMonData(egg, MON_DATA_SPEED_IV, &iv);
+}
+
+// Coloration: one standalone roll (10/15/20% for 0/1/2 Everstone holders), donor parent chosen 50/50.
+// The three IV-based traits (ability byte, type1, type2) each get two fully independent rolls (10% mother, 10% father -
+// not mutually exclusive; if both hit, father's copy is applied second and wins), then two independent 5% rolls for a
+// full copy of those three traits from one parent, checked last so a "full copy" hit overrides whatever the per-trait
+// rolls above already set. If both full-copy rolls hit, father's copy is applied last and wins.
+static void ApplyParentalInheritance(Pokemon *egg, Daycare *dayCare, const u8 *gender_idx) {
+    u32 everstoneMult = GetEverstoneInheritanceMultiplier(dayCare);
+    BoxPokemon *mother = Daycare_GetBoxMonI(dayCare, gender_idx[0]);
+    BoxPokemon *father = Daycare_GetBoxMonI(dayCare, gender_idx[1]);
+
+    u32 coloration_chance = PARENTAL_COLORATION_BASE_CHANCE + PARENTAL_COLORATION_CHANCE_PER_EVERSTONE * GetEverstoneCount(dayCare);
+    if ((LCRandom() % 100) < coloration_chance) {
+        InheritColorationFromParent(egg, (LCRandom() % 2 == 0) ? mother : father);
+    }
+    if (RollInheritChance(PARENTAL_INHERIT_BASE_CHANCE, everstoneMult)) {
+        InheritAbilityByteFromParent(egg, mother);
+    }
+    if (RollInheritChance(PARENTAL_INHERIT_BASE_CHANCE, everstoneMult)) {
+        InheritAbilityByteFromParent(egg, father);
+    }
+    if (RollInheritChance(PARENTAL_INHERIT_BASE_CHANCE, everstoneMult)) {
+        InheritType1FromParent(egg, mother);
+    }
+    if (RollInheritChance(PARENTAL_INHERIT_BASE_CHANCE, everstoneMult)) {
+        InheritType1FromParent(egg, father);
+    }
+    if (RollInheritChance(PARENTAL_INHERIT_BASE_CHANCE, everstoneMult)) {
+        InheritType2FromParent(egg, mother);
+    }
+    if (RollInheritChance(PARENTAL_INHERIT_BASE_CHANCE, everstoneMult)) {
+        InheritType2FromParent(egg, father);
+    }
+    if (RollInheritChance(PARENTAL_INHERIT_FULL_CHANCE, everstoneMult)) {
+        InheritAbilityByteFromParent(egg, mother);
+        InheritType1FromParent(egg, mother);
+        InheritType2FromParent(egg, mother);
+    }
+    if (RollInheritChance(PARENTAL_INHERIT_FULL_CHANCE, everstoneMult)) {
+        InheritAbilityByteFromParent(egg, father);
+        InheritType1FromParent(egg, father);
+        InheritType2FromParent(egg, father);
+    }
+}
+
 void GiveEggToPlayer(Daycare *dayCare, Party *party, PlayerProfile *profile) {
     u8 gender_idx[NUM_DAYCARE_MONS];
+    u8 speciesParentIdx;
     Pokemon *mon = AllocMonZeroed(HEAP_ID_FIELD1);
-    u16 species = Daycare_BreedingIncenseCheck(Daycare_GetEggSpecies(dayCare, gender_idx), dayCare);
+    u16 species = Daycare_BreedingIncenseCheck(Daycare_GetEggSpecies(dayCare, gender_idx, &speciesParentIdx), dayCare);
     u32 otId = PlayerProfile_GetTrainerID(profile);
-    u8 mom_form = GetBoxMonData(Daycare_GetBoxMonI(dayCare, gender_idx[0]), MON_DATA_FORM, NULL);
+    u8 mom_form = GetBoxMonData(Daycare_GetBoxMonI(dayCare, speciesParentIdx), MON_DATA_FORM, NULL);
     SetBreedEggStats(mon, species, dayCare, otId, mom_form);
     InheritIVs(mon, dayCare);
     InheritMoves(mon, Daycare_GetBoxMonI(dayCare, gender_idx[1]), Daycare_GetBoxMonI(dayCare, gender_idx[0]));
+    ApplyParentalInheritance(mon, dayCare, gender_idx);
     MonSetTrainerMemo(mon, profile, 3, sub_02017FE4(MAPSECTYPE_GIFT, 0), HEAP_ID_FIELD1);
     if (species == SPECIES_PICHU) {
         Daycare_LightBallCheck(mon, dayCare);
@@ -641,6 +784,15 @@ void GiveEggToPlayer(Daycare *dayCare, Party *party, PlayerProfile *profile) {
     Save_Daycare_ResetEggStats(dayCare);
     Heap_Free(mon);
 }
+
+// QOL (2026-10-04, replaces the 2026-09-26 / ENTRY CP approach): eggs hatch 20x faster per user request. Each step now
+// advances the egg-cycle counter by EGG_HATCH_SPEED_MULTIPLIER ticks instead of 1 (see the cycle check in the step handler
+// below), so a cycle (255 ticks, 230 on the special dates) completes every 255/20 = 12.75 steps on average - exactly 20x
+// faster, for every egg - and the vanilla 1 (2 with Flame Body / Magma Armor) is subtracted per cycle as in the original
+// game. The previous approach subtracted a multiplied amount per cycle, but the counter is an egg's remaining cycles
+// (5-40 for 461 of 493 species) and the loop falls back to "subtract 1" whenever the counter is below the amount, so those
+// eggs got no speed-up at all (and Flame Body became slower than vanilla).
+#define EGG_HATCH_SPEED_MULTIPLIER 20
 
 static u8 GetEggCyclesToSubtract(Party *party) {
     int partySize = Party_GetCount(party);
@@ -679,21 +831,24 @@ static u8 ComputeCompatibilityBetweenBoxMons(BoxPokemon **parents) {
         eggGroups[i][0] = GetMonBaseStat(species[i], BASE_EGG_GROUP_1);
         eggGroups[i][1] = GetMonBaseStat(species[i], BASE_EGG_GROUP_2);
     }
-    // The Undiscovered egg group cannot breed.
-    if (eggGroups[0][0] == EGG_GROUP_UNDISCOVERED || eggGroups[1][0] == EGG_GROUP_UNDISCOVERED) {
-        return PARENTS_INCOMPATIBLE;
-    }
     // Two Ditto cannot breed.
     if (eggGroups[0][0] == EGG_GROUP_DITTO && eggGroups[1][0] == EGG_GROUP_DITTO) {
         return PARENTS_INCOMPATIBLE;
     }
-    // If one of the two Pokemon is a Ditto, treat them as different species. See below.
+    // QOL (2026-09-26): Ditto can now breed with ANY other Pokemon, including Undiscovered-egg-group
+    // legendaries and genderless species - this check was moved above the Undiscovered-group and
+    // genderless checks below (which used to block Ditto x legendary/genderless pairs) per user
+    // request. If one of the two Pokemon is a Ditto, treat them as different species. See below.
     if (eggGroups[0][0] == EGG_GROUP_DITTO || eggGroups[1][0] == EGG_GROUP_DITTO) {
         if (otIds[0] == otIds[1]) {
             return PARENTS_LOW_COMPATIBILITY;
         } else {
             return PARENTS_MED_COMPATIBILITY;
         }
+    }
+    // The Undiscovered egg group cannot breed (except with Ditto, handled above).
+    if (eggGroups[0][0] == EGG_GROUP_UNDISCOVERED || eggGroups[1][0] == EGG_GROUP_UNDISCOVERED) {
+        return PARENTS_INCOMPATIBLE;
     }
     // Same-gender pairs cannot breed.
     if (genders[0] == genders[1]) {
@@ -776,17 +931,31 @@ BOOL HandleDaycareStep(Daycare *dayCare, Party *party, FieldSystem *fieldSystem)
     if (!Save_Daycare_HasEgg(dayCare) && monsInDaycare == NUM_DAYCARE_MONS) {
         u8 steps = DaycareMon_GetSteps(Save_Daycare_GetMonX(dayCare, 1));
         if (steps == 255) {
-            u8 compat = Save_Daycare_CalcCompatibilityInternal(dayCare);
+            u32 compat = Save_Daycare_CalcCompatibilityInternal(dayCare);
+            // QOL (2026-09-26): 20x higher chance to generate an egg per tick, per user request. compat
+            // is one of PARENTS_LOW/MED/MAX_COMPATIBILITY (20/50/70), so it's boosted directly rather
+            // than touching those constants (which are also used elsewhere for the compatibility
+            // message), then capped at 100 since it's compared against a roughly 0..100 roll below.
+            compat *= 20;
+            if (compat > 100) {
+                compat = 100;
+            }
             if (compat > (LCRandom() * 100 / 0xFFFFu)) {
                 GenerateEggPID(dayCare);
                 sub_0209316C(fieldSystem);
             }
         }
     }
-    int cycleCounter = Save_Daycare_GetEggCycleCounter(dayCare);
-    Save_Daycare_SetEggCycleCounter(dayCare, cycleCounter + 1);
-    if (cycleCounter + 1 == Daycare_GetEggCycleLength(fieldSystem)) {
-        Save_Daycare_SetEggCycleCounter(dayCare, 0);
+    // QOL (2026-10-04): the counter advances EGG_HATCH_SPEED_MULTIPLIER ticks per step (vanilla: 1) and keeps the remainder
+    // when a cycle completes, so cycles complete exactly 20x as often on average. Using ">=" instead of vanilla's "=="
+    // is required here (a step can now jump past the cycle length), and also makes a counter value saved mid-cycle by an
+    // older build harmless.
+    int cycleCounter = Save_Daycare_GetEggCycleCounter(dayCare) + EGG_HATCH_SPEED_MULTIPLIER;
+    int cycleLength = Daycare_GetEggCycleLength(fieldSystem);
+    if (cycleCounter < cycleLength) {
+        Save_Daycare_SetEggCycleCounter(dayCare, cycleCounter);
+    } else {
+        Save_Daycare_SetEggCycleCounter(dayCare, cycleCounter - cycleLength);
         u8 to_sub = GetEggCyclesToSubtract(party);
         for (slot = 0; slot < Party_GetCount(party); slot++) {
             Pokemon *mon = Party_GetMonByIndex(party, slot);

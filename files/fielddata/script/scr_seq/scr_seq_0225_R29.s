@@ -307,7 +307,7 @@ _04DC:
 	ApplyMovement obj_R29_tsure_poke_static_marill, _0654
 	WaitMovement
 	GenderMsgBox msg_0373_R29_00003, msg_0373_R29_00004
-	GiveItemNoCheck ITEM_POKE_BALL, 5
+	GiveItemNoCheck ITEM_POKE_BALL, 50
 	GenderMsgBox msg_0373_R29_00007, msg_0373_R29_00008
 	CloseMsg
 	ApplyMovement obj_R29_var_2, _0928

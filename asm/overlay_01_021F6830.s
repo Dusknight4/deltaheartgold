@@ -130,6 +130,16 @@ ov01_021F68DC: ; 0x021F68DC
 	mov r3, #4
 	bl CreateSysTaskAndEnvironment
 	add r4, r0, #0
+	; HARDWARE CRASH FIX (2026-09-24): same unguarded pattern as overlay_27.s's ov27_02259F80
+	; (ENTRY AR Part 1) - CreateSysTaskAndEnvironment can return NULL, and this call site never
+	; checked before handing that straight to SysTask_GetData and then unconditionally writing
+	; through its result. Traced to this exact instruction (the "strb r1, [r0]" below, ADDR
+	; 0x00000000) via a real-hardware "Error: Data Abort!" reported leaving a tower - missed by
+	; ENTRY AR's original broad grep survey of "bl CreateSysTaskAndEnvironment" sites since this
+	; file wasn't in that list. Same fix as that entry: bail out with r0=r4=NULL instead of
+	; touching a NULL environment pointer.
+	cmp r4, #0
+	beq ov01_021F68DC_epilogue
 	bl SysTask_GetData
 	ldr r1, [r5, #0x1c]
 	strb r1, [r0]
@@ -139,6 +149,7 @@ ov01_021F68DC: ; 0x021F68DC
 	strb r1, [r0, #2]
 	str r5, [r0, #8]
 	str r1, [r0, #0xc]
+ov01_021F68DC_epilogue:
 	add r0, r4, #0
 	pop {r3, r4, r5, pc}
 	nop

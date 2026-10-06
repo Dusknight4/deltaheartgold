@@ -12,6 +12,7 @@
 
 #include "gf_rtc.h"
 #include "item.h"
+#include "species_abilities_table.h"
 #include "mail.h"
 #include "map_section.h"
 #include "math_util.h"
@@ -67,7 +68,7 @@ void sub_02072190(BoxPokemon *boxMon, PlayerProfile *a1, u32 pokeball, u32 a3, u
 #define CHECKSUM(boxMon)       CalcMonChecksum((u16 *)(boxMon)->dataBlocks, sizeof((boxMon)->dataBlocks))
 #define SHINY_CHECK(otid, pid) ((                                                                                                              \
                                     (((otid) & 0xFFFF0000u) >> 16u) ^ ((otid) & 0xFFFFu) ^ (((pid) & 0xFFFF0000u) >> 16u) ^ ((pid) & 0xFFFFu)) \
-    < 8u)
+    < SHINY_ODDS)
 #define CALC_UNOWN_LETTER(pid) ((u32)((((pid) & 0x3000000) >> 18) | (((pid) & 0x30000) >> 12) | (((pid) & 0x300) >> 6) | (((pid) & 0x3) >> 0)) % 28u)
 
 static const s8 sFlavorPreferencesByNature[NATURE_NUM][FLAVOR_MAX] = {
@@ -196,9 +197,9 @@ void CreateBoxMon(BoxPokemon *boxMon, int species, int level, int fixedIV, int h
     }
     SetBoxMonData(boxMon, MON_DATA_PERSONALITY, &fixedPersonality);
     if (otIdType == 2) {
-        do {
-            fixedOtId = (LCRandom() | (LCRandom() << 16));
-        } while (SHINY_CHECK(fixedOtId, fixedPersonality));
+        // Vanilla rerolled this until the mon could not be shiny (OT_ID_RANDOM_NO_SHINY). Now it is one unconstrained roll,
+        // so trainer mons can be shiny at the normal (SHINY_ODDS) rate.
+        fixedOtId = (LCRandom() | (LCRandom() << 16));
     } else if (otIdType != 1) {
         fixedOtId = 0;
     }
@@ -478,6 +479,109 @@ u32 GetBoxMonData(BoxPokemon *boxMon, int attr, void *dest) {
     return ret;
 }
 
+// ---------------------------------------------------------------------------------------------------------------------
+// Ability donor mod (ported from the FireRed romhack).
+//
+// A mon can have its ability replaced by the ability of a different "donor" species. Whether that happens and which species
+// donates is fully determined by the mon's Defense and Sp. Defense IVs, so it is fixed and repeatable for that individual.
+//
+//     seed = (defIV << 5) | spDefIV                        (0..1023)
+//
+// QOL (2026-09-26): the species mapping below was replaced with a direct, wrapping 1:1 index per user request (previously
+// it remapped seeds to stay compatible with a FireRed romhack's donor selection - that compatibility mapping is gone).
+// The seed now picks a donor species (national dex number) like this:
+//     seed    0          -> no donor: the mon keeps its real ability
+//     seed    1..493     -> donor = seed                    (species 1..493, i.e. donor's dex number == seed)
+//     seed  494..986     -> donor = seed - 493               (wraps back around to species 1..493)
+//     seed  987..1023    -> no donor: the mon keeps its real ability
+//
+// The donor's ability in the slot picked by the mon's personality is used: odd personality -> the donor's SECOND ability, even ->
+// its first; if the donor has no ability in that slot it uses the donor's first ability. QOL (2026-10-05, per user request): the
+// slot now follows the personality's low bit ALONE (GetDonorAbilitySlot), so a species that has only one ability of its own
+// (Rayquaza, Arceus, ...) can still receive a donor's second ability - before, such a species always got the donor's first one
+// because the game's own rule only counts an odd personality when the mon's own species has a second ability.
+// GetMonAbilitySlot below keeps that original game rule and is used only by the Multitype type-override (MON_DATA_TYPE_1/
+// MON_DATA_TYPE_2 below), so a donor-granted Multitype on a dual-ability species landing in ability slot 2 affects Type2
+// instead of Type1, while a real Arceus (one ability) always keeps overriding Type1 whatever its personality.
+//
+// This runs inside the ability getter, so it applies everywhere the ability is read (summary screen, battle start, switch-ins,
+// abilities that affect wild encounters, ...) and nothing stored in the save changes. Abilities come from a static table,
+// because GetMonBaseStat allocates memory and reads the ROM on every call.
+static u32 GetAbilityDonorSpecies(u32 seed) {
+    if (seed == 0 || seed > NATIONAL_DEX_COUNT * 2) {
+        return SPECIES_NONE;
+    }
+    if (seed <= NATIONAL_DEX_COUNT) {
+        return seed;
+    }
+    return seed - NATIONAL_DEX_COUNT;
+}
+
+static u32 GetMonAbilitySlot(u32 species, u32 personality) {
+    if (species == SPECIES_NONE || species > NATIONAL_DEX_COUNT) {
+        return 0;
+    }
+    return (sSpeciesAbilities[species][1] != ABILITY_NONE && (personality & 1)) ? 1 : 0;
+}
+
+// Which of the DONOR's two abilities a mon receives: the personality's low bit only (see the comment block above).
+static u32 GetDonorAbilitySlot(u32 personality) {
+    return personality & 1;
+}
+
+static u32 ApplyAbilityDonor(u32 storedAbility, u32 species, u32 personality, const PokemonDataBlockB *blockB) {
+    u32 donor;
+    u32 slot;
+    u32 ability;
+
+    if (species == SPECIES_NONE || species > NATIONAL_DEX_COUNT || blockB->isEgg) {
+        return storedAbility;
+    }
+    donor = GetAbilityDonorSpecies((blockB->defIV << 5) | blockB->spDefIV);
+    if (donor == SPECIES_NONE) {
+        return storedAbility;
+    }
+    slot = GetDonorAbilitySlot(personality);
+    ability = sSpeciesAbilities[donor][slot];
+    if (ability == ABILITY_NONE) {
+        ability = sSpeciesAbilities[donor][0];
+    }
+    if (ability == ABILITY_NONE) {
+        return storedAbility;
+    }
+    return ability;
+}
+
+// Size (in u16 entries, including the end marker) of the buffer a level-up learnset is read into. Vanilla used MAX_LEARNED_MOVES (22), which
+// fits the vanilla maximum of 20 moves. The FireRed data merge (ENTRY AE) made the longest learnset 23 moves, raising this to 40. The 3-way
+// learnset merge (vanilla HG + custom FireRed + custom Crystal, superseding ENTRY AE's rule - see tools/merge_learnsets_3way.py) raises the
+// longest list to 42 moves (Yanma/Scizor/Mr. Mime), since a move learned at two different levels in different sources is now kept at BOTH
+// levels instead of one replacing the other - this is bumped accordingly, with headroom. Every reader of the learnset NARC allocates with it
+// (it is used below and must not be lowered).
+#define LEARNSET_BUFFER_ENTRIES 48
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Custom type override (ported from the FireRed romhack).
+//
+// A mon's type1 is overridden by its HP IV and its type2 by its Speed IV, when that IV is a valid type index:
+//     type1 = species' real type1;  if (HP_IV    is a valid type index) type1 = HP_IV;
+//     type2 = species' real type2;  if (Speed_IV is a valid type index) type2 = Speed_IV;
+// "Valid" means below CUSTOM_TYPE_COUNT (18: Normal..Dark) and not TYPE_MYSTERY (9, "???"). An IV outside that range is a
+// deliberate "no override" for that slot, not an error.
+//
+// This is done inside the getter for MON_DATA_TYPE_1 / MON_DATA_TYPE_2, which is the single source every part of the game reads a
+// mon's type from: the summary screen (sub_0208981C reads 0xB1/0xB2), battle-mon creation on send-out and on every switch-in
+// (overlay_12_0224E4FC.c: battleMons[].type1/type2), and the TM/HM check below (GetBoxMonTMHMCompat). So the override is
+// written once, cannot reset when a mon is swapped out and back in, and nothing stored in a save changes. Eggs are not overridden.
+#define CUSTOM_TYPE_COUNT 18
+
+static u32 ApplyCustomType(u32 speciesType, u32 iv) {
+    if (iv < CUSTOM_TYPE_COUNT && iv != TYPE_MYSTERY) {
+        return iv;
+    }
+    return speciesType;
+}
+
 static u32 GetBoxMonDataInternal(BoxPokemon *boxMon, int attr, void *dest) {
     u32 ret = 0;
     PokemonDataBlockA *blockA = &GetSubstruct(boxMon, boxMon->personality, 0)->blockA;
@@ -546,7 +650,7 @@ static u32 GetBoxMonDataInternal(BoxPokemon *boxMon, int attr, void *dest) {
         ret = blockA->friendship;
         break;
     case MON_DATA_ABILITY:
-        ret = blockA->ability;
+        ret = ApplyAbilityDonor(blockA->ability, blockA->species, boxMon->personality, blockB);
         break;
     case MON_DATA_MARKINGS:
         ret = blockA->markings;
@@ -858,13 +962,27 @@ static u32 GetBoxMonDataInternal(BoxPokemon *boxMon, int attr, void *dest) {
         }
         break;
     case MON_DATA_TYPE_1:
-    case MON_DATA_TYPE_2:
-        if (blockA->species == SPECIES_ARCEUS && blockA->ability == ABILITY_MULTITYPE) {
+    case MON_DATA_TYPE_2: {
+        // QOL (2026-09-26): Multitype's plate-based type override now works on any species that rolled
+        // Multitype via the ability-donor mechanism above (ApplyAbilityDonor), not just a real Arceus -
+        // checking blockA->ability directly only ever matched a mon whose UN-donated, stored ability was
+        // already Multitype (i.e. vanilla Arceus), since the donor swap only ever happened inside the
+        // MON_DATA_ABILITY getter, not on blockA->ability itself. Which of Type1/Type2 gets overridden
+        // depends on which ability slot Multitype landed in (GetMonAbilitySlot, same rule
+        // ApplyAbilityDonor uses): slot 1 (the mon's own "Ability 1") overrides Type1, slot 2 overrides
+        // Type2, matching how a real Arceus (always slot 1) has only ever overridden Type1.
+        u32 effectiveAbility = ApplyAbilityDonor(blockA->ability, blockA->species, boxMon->personality, blockB);
+        u32 abilitySlot = GetMonAbilitySlot(blockA->species, boxMon->personality);
+        if (effectiveAbility == ABILITY_MULTITYPE && ((attr == MON_DATA_TYPE_1 && abilitySlot == 0) || (attr == MON_DATA_TYPE_2 && abilitySlot == 1))) {
             ret = (u32)GetArceusTypeByHeldItemEffect((u16)GetItemAttr(blockA->heldItem, ITEMATTR_HOLD_EFFECT, HEAP_ID_DEFAULT));
         } else {
             ret = (u32)GetMonBaseStat_HandleAlternateForm(blockA->species, blockB->form, (int)(attr - MON_DATA_TYPE_1 + BASE_TYPE1));
         }
+        if (!blockB->isEgg) {
+            ret = ApplyCustomType(ret, attr == MON_DATA_TYPE_1 ? blockB->hpIV : blockB->speedIV);
+        }
         break;
+    }
     case MON_DATA_SPECIES_NAME:
         GetSpeciesNameIntoArray(blockA->species, HEAP_ID_DEFAULT, dest);
         break;
@@ -2186,11 +2304,21 @@ void GetBoxmonSpriteCharAndPlttNarcIds(PokepicTemplate *pokepicTemplate, BoxPoke
 void GetMonSpriteCharAndPlttNarcIdsEx(PokepicTemplate *pokepicTemplate, u16 species, u8 gender, u8 whichFacing, u8 shiny, u8 form, u32 personality) {
     pokepicTemplate->species = SPECIES_NONE;
     pokepicTemplate->isAnimated = FALSE;
-    // QOL (2026-09-26): personality was never set anywhere in this function (not even the
-    // non-form default case, which only calls sub_02070560 - that helper doesn't touch personality
-    // either), so no species ever got palette rotation through this path. See the matching fix in
-    // GetMonSpriteCharAndPlttNarcIdsEx above.
+    // QOL (2026-09-26): every special-form species below used to leave personality at 0, so none of
+    // them ever got personality-based palette rotation applied to their 2D sprite - only the default
+    // (no-alternate-form) case did. The 3D overworld follower model already applies this rotation
+    // correctly regardless of form, so the 2D sprite path is made to match here.
     pokepicTemplate->personality = personality;
+    {
+        // Never let an internal form-lookup ID reach the default branch below - it would index the Pokemon sprite
+        // NARC past its end (see SplitFormSpecies). Map it back to the real species + form first.
+        u16 baseSpecies;
+        u8 baseForm;
+        if (SplitFormSpecies(species, &baseSpecies, &baseForm)) {
+            species = baseSpecies;
+            form = baseForm;
+        }
+    }
     form = sub_02070438(species, form);
     switch (species) {
     case SPECIES_BURMY:
@@ -2272,10 +2400,10 @@ void GetMonSpriteCharAndPlttNarcIdsEx(PokepicTemplate *pokepicTemplate, u16 spec
         pokepicTemplate->narcID = NARC_poketool_pokegra_pokegra;
         pokepicTemplate->charDataID = (u16)(species * 6 + whichFacing + (gender == MON_FEMALE ? 0 : 1));
         pokepicTemplate->palDataID = (u16)(shiny + (species * 6 + 4));
+        pokepicTemplate->personality = personality;
         if (species == SPECIES_SPINDA && whichFacing == MON_PIC_FACING_FRONT) {
             pokepicTemplate->species = SPECIES_SPINDA;
             pokepicTemplate->isAnimated = FALSE;
-            pokepicTemplate->personality = personality;
         }
         break;
     }
@@ -2366,11 +2494,21 @@ void sub_02070560(PokepicTemplate *pokepicTemplate, u16 species, u8 whichFacing,
 void DP_GetMonSpriteCharAndPlttNarcIdsEx(PokepicTemplate *pokepicTemplate, u16 species, u8 gender, u8 whichFacing, u8 shiny, u8 form, u32 personality) {
     pokepicTemplate->species = SPECIES_NONE;
     pokepicTemplate->isAnimated = FALSE;
-    // QOL (2026-09-26): every special-form species below used to leave personality at 0, so none of
-    // them ever got personality-based palette rotation applied to their 2D sprite - only the default
-    // (no-alternate-form) case did. The 3D overworld follower model already applies this rotation
-    // correctly regardless of form, so the 2D sprite path is made to match here.
+    // QOL (2026-09-26): personality was never set anywhere in this function (not even the
+    // non-form default case, which only calls sub_02070560 - that helper doesn't touch personality
+    // either), so no species ever got palette rotation through this path. See the matching fix in
+    // GetMonSpriteCharAndPlttNarcIdsEx above.
     pokepicTemplate->personality = personality;
+    {
+        // Never let an internal form-lookup ID reach the default branch below - it would index the Pokemon sprite
+        // NARC past its end (see SplitFormSpecies). Map it back to the real species + form first.
+        u16 baseSpecies;
+        u8 baseForm;
+        if (SplitFormSpecies(species, &baseSpecies, &baseForm)) {
+            species = baseSpecies;
+            form = baseForm;
+        }
+    }
     form = sub_02070438(species, form);
     switch (species) {
     case SPECIES_BURMY:
@@ -2404,7 +2542,6 @@ void DP_GetMonSpriteCharAndPlttNarcIdsEx(PokepicTemplate *pokepicTemplate, u16 s
         pokepicTemplate->palDataID = (u16)(shiny + 0xAA + form * 2);
         break;
     case SPECIES_CASTFORM:
-        pokepicTemplate->personality = personality;
         pokepicTemplate->narcID = NARC_pbr_otherpoke;
         pokepicTemplate->charDataID = (u16)(whichFacing * 2 + 0x40 + form);
         pokepicTemplate->palDataID = (u16)(shiny * 4 + 0x8A + form);
@@ -2470,6 +2607,7 @@ void DP_GetMonSpriteCharAndPlttNarcIdsEx(PokepicTemplate *pokepicTemplate, u16 s
         if (species == SPECIES_SPINDA && whichFacing == MON_PIC_FACING_FRONT) {
             pokepicTemplate->species = SPECIES_SPINDA;
             pokepicTemplate->isAnimated = FALSE;
+            pokepicTemplate->personality = personality;
         }
         break;
     }
@@ -3048,7 +3186,7 @@ void InitBoxMonMoveset(BoxPokemon *boxMon) {
     u32 form;
     u8 level;
     u16 move;
-    levelUpLearnset = Heap_Alloc(HEAP_ID_DEFAULT, MAX_LEARNED_MOVES * sizeof(u16));
+    levelUpLearnset = Heap_Alloc(HEAP_ID_DEFAULT, LEARNSET_BUFFER_ENTRIES * sizeof(u16));
     decry = AcquireBoxMonLock(boxMon);
     species = (u16)GetBoxMonData(boxMon, MON_DATA_SPECIES, NULL);
     form = GetBoxMonData(boxMon, MON_DATA_FORM, NULL);
@@ -3149,7 +3287,7 @@ void BoxMonSetMoveInSlot(BoxPokemon *boxMon, u16 move, u8 slot) {
 
 u32 MonTryLearnMoveOnLevelUp(Pokemon *mon, int *last_i, u16 *sp0) {
     u32 ret = 0;
-    u16 *levelUpLearnset = Heap_Alloc(HEAP_ID_DEFAULT, MAX_LEARNED_MOVES * sizeof(u16));
+    u16 *levelUpLearnset = Heap_Alloc(HEAP_ID_DEFAULT, LEARNSET_BUFFER_ENTRIES * sizeof(u16));
     u16 species = (u16)GetMonData(mon, MON_DATA_SPECIES, NULL);
     u32 form = GetMonData(mon, MON_DATA_FORM, NULL);
     u8 level = (u8)GetMonData(mon, MON_DATA_LEVEL, NULL);
@@ -3278,7 +3416,16 @@ u16 SpeciesToJohtoDexNo(u16 species) {
 }
 
 u16 *LoadSpeciesToJohtoDexNoLUT(void) {
-    return AllocAtEndAndReadWholeNarcMemberByIdPair(NARC_poketool_johtozukan, 0, HEAP_ID_3);
+    u16 *table = AllocAtEndAndReadWholeNarcMemberByIdPair(NARC_poketool_johtozukan, 0, HEAP_ID_3);
+    if (table == NULL) {
+        // BUGFIX (2026-10-04, user-reported Trainer Card red screen after a long egg-hatching session): HEAP_ID_3 is the root
+        // heap every field/app sub-heap is carved from and runs with very little slack, so this ~1KB request can fail
+        // once the heap fills up or fragments. The loader never checked, and Pokedex_CountJohtoDexOwned then read
+        // NULL[10] (Data Abort at 0x14, loop index 10 = the first owned species). Retry from the small always-present
+        // default heap; callers must still cope with NULL (see pokedex.c).
+        table = AllocAtEndAndReadWholeNarcMemberByIdPair(NARC_poketool_johtozukan, 0, HEAP_ID_DEFAULT);
+    }
+    return table;
 }
 
 void CopyPokemonToPokemon(const Pokemon *src, Pokemon *dest) {
@@ -3308,7 +3455,7 @@ s8 GetFlavorPreferenceFromPID(u32 personality, int flavor) {
 
 int Species_LoadLearnsetTable(u32 species, u32 form, u16 *dest) {
     int i;
-    u16 *levelUpLearnset = Heap_Alloc(HEAP_ID_DEFAULT, MAX_LEARNED_MOVES * sizeof(u16));
+    u16 *levelUpLearnset = Heap_Alloc(HEAP_ID_DEFAULT, LEARNSET_BUFFER_ENTRIES * sizeof(u16));
     LoadLevelUpLearnset_HandleAlternateForm(species, (int)form, levelUpLearnset);
     for (i = 0; levelUpLearnset[i] != LEVEL_UP_LEARNSET_END; i++) {
         dest[i] = LEVEL_UP_LEARNSET_MOVE(levelUpLearnset[i]);
@@ -3782,6 +3929,21 @@ BOOL GetBoxMonTMHMCompat(BoxPokemon *boxMon, u8 tmhm) {
 
     species = GetBoxMonData(boxMon, MON_DATA_SPECIES_OR_EGG, NULL);
     form = GetBoxMonData(boxMon, MON_DATA_FORM, NULL);
+
+    // Custom-type mod: a mon can always learn a TM/HM whose move type matches either of its (custom) types, bypassing the
+    // species learnset. MON_DATA_TYPE_1/2 already return the effective types with the HP/Speed IV override applied.
+    if (species != SPECIES_EGG && tmhm < NUM_TMS + NUM_HMS) {
+        u16 tmhmMove = TMHMGetMove((u16)(ITEM_TM01 + tmhm));
+
+        if (tmhmMove != MOVE_NONE) {
+            u32 moveType = GetMoveAttr(tmhmMove, MOVEATTR_TYPE);
+
+            if (moveType == GetBoxMonData(boxMon, MON_DATA_TYPE_1, NULL) || moveType == GetBoxMonData(boxMon, MON_DATA_TYPE_2, NULL)) {
+                return TRUE;
+            }
+        }
+    }
+
     return GetTMHMCompatBySpeciesAndForm(species, form, tmhm);
 }
 
@@ -4026,6 +4188,44 @@ int ResolveMonForm(int species, int form) {
         break;
     }
     return species;
+}
+
+// Inverse of ResolveMonForm: species IDs 496-507 (Deoxys formes, Wormadam cloaks, Giratina Origin, Shaymin Sky, Rotom
+// appliances) are internal personal-data/learnset lookup keys, not real species - a Pokemon must be stored as the base
+// species plus a form number. Anything that treats one of these as a real species indexes the Pokemon sprite NARC
+// (a/0/0/4, which only has entries for species 0-493) past its end: species 500 -> file 3002 reads random sprite bytes
+// as a FAT entry (a ~2.7GB read at a ROM offset far beyond the cart), which crashes the game or the loader.
+BOOL SplitFormSpecies(u16 formSpecies, u16 *species, u8 *form) {
+    switch (formSpecies) {
+    case SPECIES_DEOXYS_ATK:
+    case SPECIES_DEOXYS_DEF:
+    case SPECIES_DEOXYS_SPD:
+        *species = SPECIES_DEOXYS;
+        *form = DEOXYS_ATTACK + (formSpecies - SPECIES_DEOXYS_ATK);
+        return TRUE;
+    case SPECIES_WORMADAM_SANDY:
+    case SPECIES_WORMADAM_TRASH:
+        *species = SPECIES_WORMADAM;
+        *form = WORMADAM_SANDY + (formSpecies - SPECIES_WORMADAM_SANDY);
+        return TRUE;
+    case SPECIES_GIRATINA_ORIGIN:
+        *species = SPECIES_GIRATINA;
+        *form = GIRATINA_ORIGIN;
+        return TRUE;
+    case SPECIES_SHAYMIN_SKY:
+        *species = SPECIES_SHAYMIN;
+        *form = SHAYMIN_SKY;
+        return TRUE;
+    case SPECIES_ROTOM_HEAT:
+    case SPECIES_ROTOM_WASH:
+    case SPECIES_ROTOM_FROST:
+    case SPECIES_ROTOM_FAN:
+    case SPECIES_ROTOM_MOW:
+        *species = SPECIES_ROTOM;
+        *form = ROTOM_HEAT + (formSpecies - SPECIES_ROTOM_HEAT);
+        return TRUE;
+    }
+    return FALSE;
 }
 
 u32 MaskOfFlagNo(int flagno) {

@@ -180,6 +180,20 @@ void Heap_Destroy(enum HeapID heapID) {
 
 static void *AllocFromHeapInternal(NNSFndHeapHandle heap, u32 size, s32 alignment, enum HeapID heapID) {
     GF_ASSERT(heap);
+    // HARDWARE CRASH FIX (2026-09-24): GF_ASSERT is compiled out in this build (see assert.h -
+    // it's a no-op unless PM_KEEP_ASSERTS is defined), so the check above never actually stops a
+    // NULL heap from reaching NNS_FndAllocFromExpHeapEx below. A NULL handle here means some
+    // caller's earlier Heap_Create(...) call silently failed (its own BOOL return value went
+    // unchecked - GF_ASSERT is a no-op there too) and then tried to allocate from the heap anyway.
+    // Traced via a real-hardware "Error: Data Abort!" (ADDR 0x00000000) to this exact path: it
+    // crashes deep inside the Nitro SDK's AllocFromHead, which has no release-build handle
+    // validation of its own. Heap_Alloc/Heap_AllocAtEnd already have a graceful "ptr == NULL ->
+    // AllocFail()" path for ordinary allocation failure (e.g. heap full) - this NULL check just
+    // makes an invalid/uncreated heap ID take that same already-existing path instead of crashing
+    // before ever reaching it.
+    if (heap == NULL) {
+        return NULL;
+    }
 
     OSIntrMode intrMode = OS_DisableInterrupts();
     size += sizeof(MemoryBlock);

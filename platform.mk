@@ -38,7 +38,9 @@ else
   endif
 endif
 
-ifeq ($(NOWINE),1)
+ifeq ($(OS),Windows_NT)
+  WINPATH := sh $(PROJECT_ROOT)/tools/winpath-shim.sh
+else ifeq ($(NOWINE),1)
   WINE :=
   WINPATH := wslpath
 else

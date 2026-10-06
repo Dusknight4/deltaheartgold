@@ -2565,9 +2565,13 @@ _02259B1E:
 	ldr r0, [r5, #4]
 	bl GetNatureFromPersonality
 	str r0, [r4, #0x24]
-	ldrb r0, [r5, #1]
-	lsl r0, r0, #0x1d
-	lsr r0, r0, #0x1f
+	; COLOR MOD (ENTRY AI): this byte (bit2 of the received payload's byte[1]) is the mon's real shiny flag - the exact
+	; same read used ~150 lines above to pick the shiny/regular PALETTE for GetMonSpriteCharAndPlttNarcIdsEx, which must
+	; stay correct. THIS copy of it only feeds [r4+0x28], the deferred-task "shiny" flag consumed later in ov12_0225B494
+	; (after Pokepic_IsAnimFinished) to decide whether to build and dispatch the post-appear message via ov12_022643C8 /
+	; ov12_02261B80 / ov07_0221C01C - confirmed by testing to be the in-battle shiny send-out sparkle. Forced to 0 here so
+	; the sparkle never fires, while the palette read above (untouched) keeps giving the correct color.
+	mov r0, #0
 	str r0, [r4, #0x28]
 	ldrb r0, [r4, #0x13]
 	cmp r0, #2
@@ -2744,9 +2748,10 @@ _02259BE4:
 	ldr r1, [r5, #0x10]
 	add r0, #0x8e
 	strh r1, [r0]
-	ldrb r0, [r5, #1]
-	lsl r0, r0, #0x1d
-	lsr r1, r0, #0x1f
+	; COLOR MOD (ENTRY AJ): same shiny-flag extraction as ov12_02259968 (ENTRY AI) but for the doubles-battle appear
+	; path. This only feeds the deferred post-appear sparkle task (offset 0x92), never the palette selection, so it is
+	; safe to force to 0 here.
+	mov r1, #0
 	add r0, r4, #0
 	add r0, #0x92
 	strb r1, [r0]
@@ -2951,9 +2956,10 @@ _02259D92:
 	ldr r1, [r4, #0x10]
 	add r0, #0x8e
 	strh r1, [r0]
-	ldrb r0, [r4, #1]
-	lsl r0, r0, #0x1d
-	lsr r1, r0, #0x1f
+	; COLOR MOD (ENTRY AJ): same shiny-flag extraction as ov12_02259968 (ENTRY AI) but for the doubles-battle appear
+	; path (second slot). This only feeds the deferred post-appear sparkle task (offset 0x92), never the palette
+	; selection, so it is safe to force to 0 here.
+	mov r1, #0
 	add r0, r5, #0
 	add r0, #0x92
 	strb r1, [r0]

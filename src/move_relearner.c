@@ -4,6 +4,12 @@
 
 #include "pokemon.h"
 
+// Size (in u16 entries, including the end marker) of the buffer a level-up learnset is read into. Vanilla used
+// LEVEL_UP_LEARNSET_MAX (21), which fits the vanilla maximum of 20 moves. The FireRed data merge (ENTRY AE) raised this to 40 (longest
+// list 23 moves). The 3-way learnset merge (see pokemon.c's LEARNSET_BUFFER_ENTRIES, which this must stay >= to) raises the longest
+// list to 42, so this is raised to match.
+#define RELEARNER_LEARNSET_ENTRIES 48
+
 MoveRelearnerArgs *MoveRelearner_New(enum HeapID heapID) {
     MoveRelearnerArgs *ret = Heap_Alloc(heapID, sizeof(MoveRelearnerArgs));
     memset(ret, 0, sizeof(MoveRelearnerArgs));
@@ -24,12 +30,12 @@ u16 *MoveRelearner_GetEligibleLevelUpMoves(Pokemon *mon, enum HeapID heapID) {
         moves[i] = GetMonData(mon, MON_DATA_MOVE1 + i, NULL);
     }
 
-    u16 *tableFromFile = Heap_Alloc(heapID, LEVEL_UP_LEARNSET_MAX * 2);
-    u16 *returnTable = Heap_Alloc(heapID, LEVEL_UP_LEARNSET_MAX * 2);
+    u16 *tableFromFile = Heap_Alloc(heapID, RELEARNER_LEARNSET_ENTRIES * 2);
+    u16 *returnTable = Heap_Alloc(heapID, RELEARNER_LEARNSET_ENTRIES * 2);
 
     LoadLevelUpLearnset_HandleAlternateForm(species, form, tableFromFile);
 
-    for (u8 i = 0, j, k = 0; i < LEVEL_UP_LEARNSET_MAX; i++) {
+    for (u8 i = 0, j, k = 0; i < RELEARNER_LEARNSET_ENTRIES; i++) {
         if (tableFromFile[i] == LEVEL_UP_LEARNSET_END) {
             returnTable[k] = LEVEL_UP_LEARNSET_END;
             break;

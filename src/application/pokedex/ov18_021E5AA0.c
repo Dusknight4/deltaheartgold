@@ -1,16 +1,8 @@
-#include <dsprot.h>
-
 #include "application/pokedex/pokedex_internal.h"
 
 #include "dex_mon_measures.h"
 #include "overlay_18.h"
 #include "sound_02004A44.h"
-
-FS_EXTERN_OVERLAY(ds_protect);
-
-void ov18_021E5C1C(void);
-void ov18_021E5C2C(void);
-void ov18_021E5C3C(void);
 
 BOOL Pokedex_Init(OverlayManager *man, int *state) {
     PokedexAppData *appData;
@@ -55,32 +47,12 @@ BOOL Pokedex_Main(OverlayManager *man, int *state) {
 BOOL Pokedex_Exit(OverlayManager *man, int *state) {
     PokedexAppData *appData = OverlayManager_GetData(man);
 
-    FS_LoadOverlay(MI_PROCESSOR_ARM9, FS_OVERLAY_ID(ds_protect));
-    if (DSProt_DetectEmulator(ov18_021E5C1C)) {
-        Heap_AllocAtEnd(HEAP_ID_3, 1000);
-    }
+    // ANTI-PIRACY REMOVAL (2026-10-05, Changelog ENTRY DN): the three DSProt detection calls (and the ds_protect overlay load/
+    // unload around them) that used to run here are gone; their callbacks were already empty (ENTRY AX).
     UnkStruct_02092BB8_Set(appData->args->unk_08, ov18_021F8838(appData), appData->unk_1858);
-    if (DSProt_DetectFlashcart(ov18_021E5C2C)) {
-        Heap_AllocAtEnd(HEAP_ID_3, 1000);
-    }
     OverlayManager_FreeData(man);
     Heap_Destroy(HEAP_ID_POKEDEX_APP);
     GF_SndHandleSetPlayerVolume(1, 127);
     sub_02004B10();
-    if (!DSProt_DetectNotDummy(ov18_021E5C3C)) {
-        Heap_AllocAtEnd(HEAP_ID_3, 1000);
-    }
-    FS_UnloadOverlay(MI_PROCESSOR_ARM9, FS_OVERLAY_ID(ds_protect));
     return TRUE;
-}
-
-void ov18_021E5C1C(void) {
-    Heap_AllocAtEnd(HEAP_ID_3, 1000);
-}
-
-void ov18_021E5C2C(void) {
-    Heap_AllocAtEnd(HEAP_ID_3, 1000);
-}
-
-void ov18_021E5C3C(void) {
 }

@@ -188,12 +188,12 @@
     },
     {
       "species": "VENUSAUR",
-      "hp": 80,
+      "hp": 120,
       "atk": 82,
       "def": 83,
       "speed": 80,
-      "spatk": 100,
-      "spdef": 100,
+      "spatk": 120,
+      "spdef": 120,
       "types": [
         "TYPE_GRASS",
         "TYPE_POISON"
@@ -423,12 +423,12 @@
     },
     {
       "species": "CHARIZARD",
-      "hp": 78,
-      "atk": 84,
-      "def": 78,
-      "speed": 100,
-      "spatk": 109,
-      "spdef": 85,
+      "hp": 98,
+      "atk": 104,
+      "def": 88,
+      "speed": 110,
+      "spatk": 129,
+      "spdef": 95,
       "types": [
         "TYPE_FIRE",
         "TYPE_FLYING"
@@ -668,12 +668,12 @@
     },
     {
       "species": "BLASTOISE",
-      "hp": 79,
+      "hp": 99,
       "atk": 83,
-      "def": 100,
+      "def": 145,
       "speed": 78,
-      "spatk": 85,
-      "spdef": 105,
+      "spatk": 105,
+      "spdef": 135,
       "types": [
         "TYPE_WATER",
         "TYPE_WATER"
@@ -755,8 +755,8 @@
     },
     {
       "species": "CATERPIE",
-      "hp": 45,
-      "atk": 30,
+      "hp": 55,
+      "atk": 40,
       "def": 35,
       "speed": 45,
       "spatk": 20,
@@ -766,7 +766,7 @@
         "TYPE_BUG"
       ],
       "catchRate": 255,
-      "expYield": 53,
+      "expYield": 73,
       "hp_yield": 1,
       "atk_yield": 0,
       "def_yield": 0,
@@ -775,7 +775,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SILVERPOWDER"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -799,7 +799,7 @@
       "species": "METAPOD",
       "hp": 50,
       "atk": 20,
-      "def": 55,
+      "def": 85,
       "speed": 30,
       "spatk": 25,
       "spdef": 25,
@@ -808,7 +808,7 @@
         "TYPE_BUG"
       ],
       "catchRate": 120,
-      "expYield": 72,
+      "expYield": 102,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 2,
@@ -817,7 +817,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SILVERPOWDER"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -839,18 +839,18 @@
     },
     {
       "species": "BUTTERFREE",
-      "hp": 60,
-      "atk": 45,
-      "def": 50,
-      "speed": 70,
-      "spatk": 80,
-      "spdef": 80,
+      "hp": 85,
+      "atk": 85,
+      "def": 65,
+      "speed": 100,
+      "spatk": 115,
+      "spdef": 85,
       "types": [
         "TYPE_BUG",
         "TYPE_FLYING"
       ],
       "catchRate": 45,
-      "expYield": 160,
+      "expYield": 190,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 0,
@@ -858,8 +858,8 @@
       "spatk_yield": 2,
       "spdef_yield": 1,
       "items": [
-        "ITEM_NONE",
-        "ITEM_SILVERPOWDER"
+        "ITEM_SILVERPOWDER",
+        "ITEM_SITRUS_BERRY"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -928,7 +928,7 @@
         "TYPE_POISON"
       ],
       "catchRate": 255,
-      "expYield": 52,
+      "expYield": 74,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 0,
@@ -937,7 +937,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_POISON_BARB"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -970,7 +970,7 @@
         "TYPE_POISON"
       ],
       "catchRate": 120,
-      "expYield": 71,
+      "expYield": 103,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 2,
@@ -979,7 +979,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_POISON_BARB"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -1001,18 +1001,18 @@
     },
     {
       "species": "BEEDRILL",
-      "hp": 65,
-      "atk": 80,
-      "def": 40,
-      "speed": 75,
+      "hp": 85,
+      "atk": 120,
+      "def": 60,
+      "speed": 95,
       "spatk": 45,
-      "spdef": 80,
+      "spdef": 100,
       "types": [
         "TYPE_BUG",
         "TYPE_POISON"
       ],
       "catchRate": 45,
-      "expYield": 159,
+      "expYield": 181,
       "hp_yield": 0,
       "atk_yield": 2,
       "def_yield": 0,
@@ -1020,8 +1020,8 @@
       "spatk_yield": 0,
       "spdef_yield": 1,
       "items": [
-        "ITEM_NONE",
-        "ITEM_POISON_BARB"
+        "ITEM_POISON_BARB",
+        "ITEM_QUICK_CLAW"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -1101,7 +1101,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SHARP_BEAK"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -1170,7 +1170,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SHARP_BEAK"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -1220,7 +1220,7 @@
     {
       "species": "PIDGEOT",
       "hp": 83,
-      "atk": 80,
+      "atk": 120,
       "def": 75,
       "speed": 91,
       "spatk": 70,
@@ -1238,7 +1238,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_SHARP_BEAK",
         "ITEM_NONE"
       ],
       "genderRatio": 0.5,
@@ -1310,7 +1310,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_CHILAN_BERRY"
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -1369,8 +1369,8 @@
     },
     {
       "species": "RATICATE",
-      "hp": 55,
-      "atk": 81,
+      "hp": 85,
+      "atk": 111,
       "def": 60,
       "speed": 97,
       "spatk": 50,
@@ -1380,7 +1380,7 @@
         "TYPE_NORMAL"
       ],
       "catchRate": 127,
-      "expYield": 116,
+      "expYield": 146,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 0,
@@ -1388,8 +1388,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_CHILAN_BERRY"
+        "ITEM_ORAN_BERRY",
+        "ITEM_SITRUS_BERRY"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -1612,7 +1612,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_POISON_BARB",
         "ITEM_NONE"
       ],
       "genderRatio": 0.5,
@@ -1669,18 +1669,18 @@
     },
     {
       "species": "ARBOK",
-      "hp": 60,
-      "atk": 85,
-      "def": 69,
+      "hp": 120,
+      "atk": 115,
+      "def": 79,
       "speed": 80,
-      "spatk": 65,
-      "spdef": 79,
+      "spatk": 85,
+      "spdef": 89,
       "types": [
         "TYPE_POISON",
         "TYPE_POISON"
       ],
       "catchRate": 90,
-      "expYield": 147,
+      "expYield": 197,
       "hp_yield": 0,
       "atk_yield": 2,
       "def_yield": 0,
@@ -1689,7 +1689,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_POISON_BARB"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -1747,11 +1747,11 @@
     },
     {
       "species": "PIKACHU",
-      "hp": 35,
-      "atk": 55,
+      "hp": 55,
+      "atk": 95,
       "def": 30,
       "speed": 90,
-      "spatk": 50,
+      "spatk": 95,
       "spdef": 40,
       "types": [
         "TYPE_ELECTRIC",
@@ -1823,11 +1823,11 @@
     },
     {
       "species": "RAICHU",
-      "hp": 60,
-      "atk": 90,
+      "hp": 80,
+      "atk": 100,
       "def": 55,
       "speed": 100,
-      "spatk": 90,
+      "spatk": 125,
       "spdef": 80,
       "types": [
         "TYPE_ELECTRIC",
@@ -1923,7 +1923,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_QUICK_CLAW"
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -2005,7 +2005,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_QUICK_CLAW"
+        "ITEM_SOFT_SAND"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -2227,8 +2227,8 @@
     },
     {
       "species": "NIDOQUEEN",
-      "hp": 90,
-      "atk": 82,
+      "hp": 130,
+      "atk": 102,
       "def": 87,
       "speed": 76,
       "spatk": 75,
@@ -2482,8 +2482,8 @@
     },
     {
       "species": "NIDOKING",
-      "hp": 81,
-      "atk": 92,
+      "hp": 111,
+      "atk": 132,
       "def": 77,
       "speed": 85,
       "spatk": 85,
@@ -2676,11 +2676,11 @@
     },
     {
       "species": "CLEFABLE",
-      "hp": 95,
+      "hp": 115,
       "atk": 70,
       "def": 73,
       "speed": 60,
-      "spatk": 85,
+      "spatk": 115,
       "spdef": 90,
       "types": [
         "TYPE_NORMAL",
@@ -2792,8 +2792,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_RAWST_BERRY",
-        "ITEM_RAWST_BERRY"
+        "ITEM_ASPEAR_BERRY",
+        "ITEM_ASPEAR_BERRY"
       ],
       "genderRatio": 0.75,
       "eggCycles": 20,
@@ -2863,8 +2863,8 @@
       "spatk_yield": 0,
       "spdef_yield": 1,
       "items": [
-        "ITEM_RAWST_BERRY",
-        "ITEM_RAWST_BERRY"
+        "ITEM_ASPEAR_BERRY",
+        "ITEM_ASPEAR_BERRY"
       ],
       "genderRatio": 0.75,
       "eggCycles": 20,
@@ -2939,7 +2939,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_ORAN_BERRY",
         "ITEM_NONE"
       ],
       "genderRatio": 0.75,
@@ -3012,7 +3012,7 @@
     },
     {
       "species": "WIGGLYTUFF",
-      "hp": 140,
+      "hp": 160,
       "atk": 70,
       "def": 45,
       "speed": 45,
@@ -3031,7 +3031,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_ORAN_BERRY",
         "ITEM_NONE"
       ],
       "genderRatio": 0.75,
@@ -3403,11 +3403,11 @@
     },
     {
       "species": "VILEPLUME",
-      "hp": 75,
+      "hp": 95,
       "atk": 80,
       "def": 85,
       "speed": 50,
-      "spatk": 100,
+      "spatk": 120,
       "spdef": 90,
       "types": [
         "TYPE_GRASS",
@@ -3554,11 +3554,11 @@
     },
     {
       "species": "PARASECT",
-      "hp": 60,
+      "hp": 120,
       "atk": 95,
       "def": 80,
       "speed": 30,
-      "spatk": 60,
+      "spatk": 80,
       "spdef": 80,
       "types": [
         "TYPE_BUG",
@@ -3700,11 +3700,11 @@
     },
     {
       "species": "VENOMOTH",
-      "hp": 70,
-      "atk": 65,
+      "hp": 80,
+      "atk": 95,
       "def": 60,
-      "speed": 90,
-      "spatk": 90,
+      "speed": 99,
+      "spatk": 118,
       "spdef": 75,
       "types": [
         "TYPE_BUG",
@@ -3720,7 +3720,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_SHED_SHELL"
+        "ITEM_SILVERPOWDER"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -3794,7 +3794,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_SOFT_SAND"
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -3867,7 +3867,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_SOFT_SAND"
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -3943,7 +3943,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_QUICK_CLAW"
+        "ITEM_NUGGET"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -4025,7 +4025,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_QUICK_CLAW"
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -4278,8 +4278,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_PAYAPA_BERRY"
+        "ITEM_BLACK_BELT",
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -4362,8 +4362,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_PAYAPA_BERRY"
+        "ITEM_BLACK_BELT",
+        "ITEM_BLACK_BELT"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -4449,8 +4449,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_RAWST_BERRY",
-        "ITEM_RAWST_BERRY"
+        "ITEM_ASPEAR_BERRY",
+        "ITEM_ASPEAR_BERRY"
       ],
       "genderRatio": 0.25,
       "eggCycles": 20,
@@ -4521,8 +4521,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_RAWST_BERRY",
-        "ITEM_RAWST_BERRY"
+        "ITEM_ASPEAR_BERRY",
+        "ITEM_ASPEAR_BERRY"
       ],
       "genderRatio": 0.25,
       "eggCycles": 20,
@@ -4832,7 +4832,7 @@
       "spatk_yield": 1,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_TWISTEDSPOON",
         "ITEM_TWISTEDSPOON"
       ],
       "genderRatio": 0.25,
@@ -4919,7 +4919,7 @@
       "spatk_yield": 2,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_TWISTEDSPOON",
         "ITEM_TWISTEDSPOON"
       ],
       "genderRatio": 0.25,
@@ -4991,7 +4991,7 @@
       "atk": 50,
       "def": 45,
       "speed": 120,
-      "spatk": 135,
+      "spatk": 150,
       "spdef": 85,
       "types": [
         "TYPE_PSYCHIC",
@@ -5088,7 +5088,7 @@
         "TYPE_FIGHTING"
       ],
       "catchRate": 180,
-      "expYield": 75,
+      "expYield": 88,
       "hp_yield": 0,
       "atk_yield": 1,
       "def_yield": 0,
@@ -5096,7 +5096,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_BLACK_BELT",
         "ITEM_NONE"
       ],
       "genderRatio": 0.25,
@@ -5175,8 +5175,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_BLACK_BELT",
+        "ITEM_FOCUS_BAND"
       ],
       "genderRatio": 0.25,
       "eggCycles": 20,
@@ -5235,10 +5235,10 @@
     },
     {
       "species": "MACHAMP",
-      "hp": 90,
-      "atk": 130,
+      "hp": 130,
+      "atk": 170,
       "def": 80,
-      "speed": 55,
+      "speed": 75,
       "spatk": 65,
       "spdef": 85,
       "types": [
@@ -5254,8 +5254,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_BLACK_BELT",
+        "ITEM_BLACK_BELT"
       ],
       "genderRatio": 0.25,
       "eggCycles": 20,
@@ -5552,7 +5552,7 @@
       "spdef_yield": 1,
       "items": [
         "ITEM_NONE",
-        "ITEM_POISON_BARB"
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -5608,11 +5608,11 @@
     },
     {
       "species": "TENTACRUEL",
-      "hp": 80,
+      "hp": 120,
       "atk": 70,
       "def": 65,
       "speed": 100,
-      "spatk": 80,
+      "spatk": 120,
       "spdef": 120,
       "types": [
         "TYPE_WATER",
@@ -5628,7 +5628,7 @@
       "spdef_yield": 2,
       "items": [
         "ITEM_NONE",
-        "ITEM_POISON_BARB"
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -5697,7 +5697,7 @@
         "TYPE_GROUND"
       ],
       "catchRate": 255,
-      "expYield": 73,
+      "expYield": 86,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 1,
@@ -5705,7 +5705,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_HARD_STONE",
         "ITEM_EVERSTONE"
       ],
       "genderRatio": 0.5,
@@ -5784,7 +5784,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_HARD_STONE",
         "ITEM_EVERSTONE"
       ],
       "genderRatio": 0.5,
@@ -5844,12 +5844,12 @@
     },
     {
       "species": "GOLEM",
-      "hp": 80,
+      "hp": 90,
       "atk": 110,
-      "def": 130,
+      "def": 180,
       "speed": 45,
       "spatk": 55,
-      "spdef": 65,
+      "spdef": 105,
       "types": [
         "TYPE_ROCK",
         "TYPE_GROUND"
@@ -5863,7 +5863,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_HARD_STONE",
         "ITEM_EVERSTONE"
       ],
       "genderRatio": 0.5,
@@ -5947,7 +5947,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_SHUCA_BERRY"
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -6015,7 +6015,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_SHUCA_BERRY"
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -6086,7 +6086,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_LAGGING_TAIL"
+        "ITEM_KINGS_ROCK"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -6270,7 +6270,7 @@
       "spatk_yield": 1,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_MAGNET",
         "ITEM_METAL_COAT"
       ],
       "genderRatio": 2.0,
@@ -6323,7 +6323,7 @@
     },
     {
       "species": "MAGNETON",
-      "hp": 50,
+      "hp": 90,
       "atk": 60,
       "def": 95,
       "speed": 70,
@@ -6342,7 +6342,7 @@
       "spatk_yield": 2,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_MAGNET",
         "ITEM_METAL_COAT"
       ],
       "genderRatio": 2.0,
@@ -6557,7 +6557,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_SHARP_BEAK",
         "ITEM_SHARP_BEAK"
       ],
       "genderRatio": 0.5,
@@ -6629,7 +6629,7 @@
       "spatk_yield": 0,
       "spdef_yield": 1,
       "items": [
-        "ITEM_NONE",
+        "ITEM_ASPEAR_BERRY",
         "ITEM_NONE"
       ],
       "genderRatio": 0.5,
@@ -6701,8 +6701,8 @@
       "spatk_yield": 0,
       "spdef_yield": 2,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_ASPEAR_BERRY",
+        "ITEM_NEVERMELTICE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -6857,7 +6857,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_LEFTOVERS",
         "ITEM_NUGGET"
       ],
       "genderRatio": 0.5,
@@ -7090,7 +7090,7 @@
       "spatk_yield": 1,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_SPELL_TAG",
         "ITEM_NONE"
       ],
       "genderRatio": 0.5,
@@ -7151,11 +7151,11 @@
     },
     {
       "species": "HAUNTER",
-      "hp": 45,
-      "atk": 50,
+      "hp": 65,
+      "atk": 95,
       "def": 45,
       "speed": 95,
-      "spatk": 115,
+      "spatk": 125,
       "spdef": 55,
       "types": [
         "TYPE_GHOST",
@@ -7170,8 +7170,8 @@
       "spatk_yield": 2,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SPELL_TAG",
+        "ITEM_SPELL_TAG"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -7234,11 +7234,11 @@
     },
     {
       "species": "GENGAR",
-      "hp": 60,
-      "atk": 65,
+      "hp": 90,
+      "atk": 115,
       "def": 60,
       "speed": 110,
-      "spatk": 130,
+      "spatk": 145,
       "spdef": 75,
       "types": [
         "TYPE_GHOST",
@@ -7253,8 +7253,8 @@
       "spatk_yield": 3,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SPELL_TAG",
+        "ITEM_SPELL_TAG"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -7327,9 +7327,9 @@
     },
     {
       "species": "ONIX",
-      "hp": 35,
-      "atk": 45,
-      "def": 160,
+      "hp": 65,
+      "atk": 75,
+      "def": 180,
       "speed": 70,
       "spatk": 30,
       "spdef": 45,
@@ -7338,7 +7338,7 @@
         "TYPE_GROUND"
       ],
       "catchRate": 45,
-      "expYield": 108,
+      "expYield": 128,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 1,
@@ -7346,8 +7346,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_HARD_STONE",
+        "ITEM_METAL_COAT"
       ],
       "genderRatio": 0.5,
       "eggCycles": 25,
@@ -7598,7 +7598,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_KINGS_ROCK"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -7658,11 +7658,11 @@
     },
     {
       "species": "KINGLER",
-      "hp": 55,
+      "hp": 65,
       "atk": 130,
       "def": 115,
       "speed": 75,
-      "spatk": 50,
+      "spatk": 90,
       "spdef": 50,
       "types": [
         "TYPE_WATER",
@@ -7677,7 +7677,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_KINGS_ROCK",
         "ITEM_NONE"
       ],
       "genderRatio": 0.5,
@@ -7829,7 +7829,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_MAGNET",
         "ITEM_NONE"
       ],
       "genderRatio": 2.0,
@@ -8210,10 +8210,10 @@
     },
     {
       "species": "HITMONLEE",
-      "hp": 50,
+      "hp": 70,
       "atk": 120,
       "def": 53,
-      "speed": 87,
+      "speed": 97,
       "spatk": 35,
       "spdef": 110,
       "types": [
@@ -8229,7 +8229,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_BLACK_BELT",
         "ITEM_NONE"
       ],
       "genderRatio": 0.0,
@@ -8286,7 +8286,7 @@
     },
     {
       "species": "HITMONCHAN",
-      "hp": 50,
+      "hp": 70,
       "atk": 105,
       "def": 79,
       "speed": 76,
@@ -8305,7 +8305,7 @@
       "spatk_yield": 0,
       "spdef_yield": 2,
       "items": [
-        "ITEM_NONE",
+        "ITEM_BLACK_BELT",
         "ITEM_NONE"
       ],
       "genderRatio": 0.0,
@@ -8362,8 +8362,8 @@
     },
     {
       "species": "LICKITUNG",
-      "hp": 90,
-      "atk": 55,
+      "hp": 110,
+      "atk": 75,
       "def": 75,
       "speed": 30,
       "spatk": 60,
@@ -8382,7 +8382,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_LAGGING_TAIL"
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -8475,7 +8475,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_SMOKE_BALL"
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -8552,7 +8552,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_SMOKE_BALL"
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -8797,10 +8797,10 @@
     {
       "species": "CHANSEY",
       "hp": 250,
-      "atk": 5,
-      "def": 5,
+      "atk": 15,
+      "def": 15,
       "speed": 50,
-      "spatk": 35,
+      "spatk": 65,
       "spdef": 105,
       "types": [
         "TYPE_NORMAL",
@@ -8815,7 +8815,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_OVAL_STONE",
+        "ITEM_NONE",
         "ITEM_LUCKY_EGG"
       ],
       "genderRatio": 1.0,
@@ -8897,12 +8897,12 @@
     },
     {
       "species": "TANGELA",
-      "hp": 65,
+      "hp": 85,
       "atk": 55,
       "def": 115,
       "speed": 60,
       "spatk": 100,
-      "spdef": 40,
+      "spdef": 60,
       "types": [
         "TYPE_GRASS",
         "TYPE_GRASS"
@@ -8974,8 +8974,8 @@
     },
     {
       "species": "KANGASKHAN",
-      "hp": 105,
-      "atk": 95,
+      "hp": 145,
+      "atk": 125,
       "def": 80,
       "speed": 90,
       "spatk": 40,
@@ -8993,7 +8993,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_SILK_SCARF",
         "ITEM_NONE"
       ],
       "genderRatio": 1.0,
@@ -9146,7 +9146,7 @@
       "atk": 65,
       "def": 95,
       "speed": 85,
-      "spatk": 95,
+      "spatk": 115,
       "spdef": 45,
       "types": [
         "TYPE_WATER",
@@ -9612,18 +9612,18 @@
     },
     {
       "species": "SCYTHER",
-      "hp": 70,
-      "atk": 110,
-      "def": 80,
-      "speed": 105,
-      "spatk": 55,
-      "spdef": 80,
+      "hp": 90,
+      "atk": 125,
+      "def": 85,
+      "speed": 135,
+      "spatk": 85,
+      "spdef": 85,
       "types": [
         "TYPE_BUG",
         "TYPE_FLYING"
       ],
       "catchRate": 45,
-      "expYield": 187,
+      "expYield": 197,
       "hp_yield": 0,
       "atk_yield": 1,
       "def_yield": 0,
@@ -9631,8 +9631,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SILVERPOWDER",
+        "ITEM_QUICK_CLAW"
       ],
       "genderRatio": 0.5,
       "eggCycles": 25,
@@ -9707,8 +9707,8 @@
       "spatk_yield": 2,
       "spdef_yield": 0,
       "items": [
-        "ITEM_ASPEAR_BERRY",
-        "ITEM_ASPEAR_BERRY"
+        "ITEM_RAWST_BERRY",
+        "ITEM_RAWST_BERRY"
       ],
       "genderRatio": 1.0,
       "eggCycles": 25,
@@ -9777,11 +9777,11 @@
     },
     {
       "species": "ELECTABUZZ",
-      "hp": 65,
-      "atk": 83,
+      "hp": 85,
+      "atk": 113,
       "def": 57,
       "speed": 105,
-      "spatk": 95,
+      "spatk": 105,
       "spdef": 85,
       "types": [
         "TYPE_ELECTRIC",
@@ -9796,7 +9796,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_MAGNET",
         "ITEM_NONE"
       ],
       "genderRatio": 0.25,
@@ -9857,11 +9857,11 @@
     },
     {
       "species": "MAGMAR",
-      "hp": 65,
-      "atk": 95,
+      "hp": 85,
+      "atk": 115,
       "def": 57,
       "speed": 93,
-      "spatk": 100,
+      "spatk": 120,
       "spdef": 85,
       "types": [
         "TYPE_FIRE",
@@ -9876,8 +9876,8 @@
       "spatk_yield": 2,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_ASPEAR_BERRY",
+        "ITEM_ASPEAR_BERRY"
       ],
       "genderRatio": 0.25,
       "eggCycles": 25,
@@ -9934,9 +9934,9 @@
     },
     {
       "species": "PINSIR",
-      "hp": 65,
-      "atk": 125,
-      "def": 100,
+      "hp": 101,
+      "atk": 145,
+      "def": 120,
       "speed": 85,
       "spatk": 55,
       "spdef": 70,
@@ -9945,7 +9945,7 @@
         "TYPE_BUG"
       ],
       "catchRate": 45,
-      "expYield": 200,
+      "expYield": 215,
       "hp_yield": 0,
       "atk_yield": 2,
       "def_yield": 0,
@@ -9954,7 +9954,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SILVERPOWDER"
       ],
       "genderRatio": 0.5,
       "eggCycles": 25,
@@ -10163,8 +10163,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_DRAGON_SCALE",
+        "ITEM_DRAGON_SCALE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 5,
@@ -10251,8 +10251,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_MYSTIC_WATER",
+        "ITEM_MYSTIC_WATER"
       ],
       "genderRatio": 0.5,
       "eggCycles": 40,
@@ -10315,12 +10315,12 @@
     },
     {
       "species": "DITTO",
-      "hp": 48,
+      "hp": 78,
       "atk": 48,
-      "def": 48,
-      "speed": 48,
+      "def": 68,
+      "speed": 78,
       "spatk": 48,
-      "spdef": 48,
+      "spdef": 68,
       "types": [
         "TYPE_NORMAL",
         "TYPE_NORMAL"
@@ -10334,7 +10334,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_QUICK_POWDER",
+        "ITEM_NONE",
         "ITEM_METAL_POWDER"
       ],
       "genderRatio": 2.0,
@@ -10357,12 +10357,12 @@
     },
     {
       "species": "EEVEE",
-      "hp": 55,
-      "atk": 55,
-      "def": 50,
-      "speed": 55,
-      "spatk": 45,
-      "spdef": 65,
+      "hp": 75,
+      "atk": 75,
+      "def": 70,
+      "speed": 75,
+      "spatk": 65,
+      "spdef": 75,
       "types": [
         "TYPE_NORMAL",
         "TYPE_NORMAL"
@@ -10376,7 +10376,7 @@
       "spatk_yield": 0,
       "spdef_yield": 1,
       "items": [
-        "ITEM_NONE",
+        "ITEM_SILK_SCARF",
         "ITEM_NONE"
       ],
       "genderRatio": 0.125,
@@ -10421,11 +10421,11 @@
     },
     {
       "species": "VAPOREON",
-      "hp": 130,
+      "hp": 150,
       "atk": 65,
       "def": 60,
       "speed": 65,
-      "spatk": 110,
+      "spatk": 120,
       "spdef": 95,
       "types": [
         "TYPE_WATER",
@@ -10499,11 +10499,11 @@
     },
     {
       "species": "JOLTEON",
-      "hp": 65,
+      "hp": 75,
       "atk": 65,
       "def": 60,
       "speed": 130,
-      "spatk": 110,
+      "spatk": 130,
       "spdef": 95,
       "types": [
         "TYPE_ELECTRIC",
@@ -10576,7 +10576,7 @@
     },
     {
       "species": "FLAREON",
-      "hp": 65,
+      "hp": 85,
       "atk": 130,
       "def": 60,
       "speed": 65,
@@ -10650,12 +10650,12 @@
     },
     {
       "species": "PORYGON",
-      "hp": 65,
-      "atk": 60,
-      "def": 70,
-      "speed": 40,
-      "spatk": 85,
-      "spdef": 75,
+      "hp": 85,
+      "atk": 70,
+      "def": 80,
+      "speed": 60,
+      "spatk": 95,
+      "spdef": 85,
       "types": [
         "TYPE_NORMAL",
         "TYPE_NORMAL"
@@ -10670,7 +10670,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_UPGRADE"
       ],
       "genderRatio": 2.0,
       "eggCycles": 20,
@@ -10729,8 +10729,8 @@
     },
     {
       "species": "OMANYTE",
-      "hp": 35,
-      "atk": 40,
+      "hp": 45,
+      "atk": 60,
       "def": 100,
       "speed": 35,
       "spatk": 90,
@@ -10740,7 +10740,7 @@
         "TYPE_WATER"
       ],
       "catchRate": 45,
-      "expYield": 99,
+      "expYield": 120,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 1,
@@ -10806,12 +10806,12 @@
     },
     {
       "species": "OMASTAR",
-      "hp": 70,
+      "hp": 130,
       "atk": 60,
-      "def": 125,
-      "speed": 55,
+      "def": 145,
+      "speed": 65,
       "spatk": 115,
-      "spdef": 70,
+      "spdef": 130,
       "types": [
         "TYPE_ROCK",
         "TYPE_WATER"
@@ -10887,18 +10887,18 @@
     },
     {
       "species": "KABUTO",
-      "hp": 30,
-      "atk": 80,
-      "def": 90,
+      "hp": 45,
+      "atk": 90,
+      "def": 99,
       "speed": 55,
-      "spatk": 55,
+      "spatk": 65,
       "spdef": 45,
       "types": [
         "TYPE_ROCK",
         "TYPE_WATER"
       ],
       "catchRate": 45,
-      "expYield": 99,
+      "expYield": 119,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 1,
@@ -10906,8 +10906,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_MYSTIC_WATER",
+        "ITEM_HARD_STONE"
       ],
       "genderRatio": 0.125,
       "eggCycles": 30,
@@ -10965,18 +10965,18 @@
     },
     {
       "species": "KABUTOPS",
-      "hp": 60,
-      "atk": 115,
-      "def": 105,
-      "speed": 80,
-      "spatk": 65,
+      "hp": 99,
+      "atk": 145,
+      "def": 125,
+      "speed": 101,
+      "spatk": 85,
       "spdef": 70,
       "types": [
         "TYPE_ROCK",
         "TYPE_WATER"
       ],
       "catchRate": 45,
-      "expYield": 199,
+      "expYield": 201,
       "hp_yield": 0,
       "atk_yield": 2,
       "def_yield": 0,
@@ -10984,8 +10984,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_MYSTIC_WATER",
+        "ITEM_HARD_STONE"
       ],
       "genderRatio": 0.125,
       "eggCycles": 30,
@@ -11052,9 +11052,9 @@
     },
     {
       "species": "AERODACTYL",
-      "hp": 80,
-      "atk": 105,
-      "def": 65,
+      "hp": 110,
+      "atk": 135,
+      "def": 85,
       "speed": 130,
       "spatk": 60,
       "spdef": 75,
@@ -11139,7 +11139,7 @@
     },
     {
       "species": "SNORLAX",
-      "hp": 160,
+      "hp": 180,
       "atk": 110,
       "def": 65,
       "speed": 30,
@@ -11228,11 +11228,11 @@
     },
     {
       "species": "ARTICUNO",
-      "hp": 90,
+      "hp": 110,
       "atk": 85,
       "def": 100,
-      "speed": 85,
-      "spatk": 95,
+      "speed": 95,
+      "spatk": 125,
       "spdef": 125,
       "types": [
         "TYPE_ICE",
@@ -11309,7 +11309,7 @@
       "atk": 90,
       "def": 85,
       "speed": 100,
-      "spatk": 125,
+      "spatk": 145,
       "spdef": 90,
       "types": [
         "TYPE_ELECTRIC",
@@ -11324,8 +11324,8 @@
       "spatk_yield": 3,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_MAGNET",
+        "ITEM_MAGNET"
       ],
       "genderRatio": 2.0,
       "eggCycles": 80,
@@ -11383,11 +11383,11 @@
     },
     {
       "species": "MOLTRES",
-      "hp": 90,
-      "atk": 100,
+      "hp": 100,
+      "atk": 110,
       "def": 90,
       "speed": 90,
-      "spatk": 125,
+      "spatk": 135,
       "spdef": 85,
       "types": [
         "TYPE_FIRE",
@@ -11402,8 +11402,8 @@
       "spatk_yield": 3,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_BRIGHTPOWDER",
+        "ITEM_BRIGHTPOWDER"
       ],
       "genderRatio": 2.0,
       "eggCycles": 80,
@@ -11479,7 +11479,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_DRAGON_SCALE",
         "ITEM_DRAGON_SCALE"
       ],
       "genderRatio": 0.5,
@@ -11558,7 +11558,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_DRAGON_SCALE",
         "ITEM_DRAGON_SCALE"
       ],
       "genderRatio": 0.5,
@@ -11618,7 +11618,7 @@
     },
     {
       "species": "DRAGONITE",
-      "hp": 91,
+      "hp": 121,
       "atk": 134,
       "def": 95,
       "speed": 80,
@@ -11637,7 +11637,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_DRAGON_SCALE",
         "ITEM_DRAGON_SCALE"
       ],
       "genderRatio": 0.5,
@@ -11716,12 +11716,12 @@
     },
     {
       "species": "MEWTWO",
-      "hp": 106,
-      "atk": 110,
+      "hp": 126,
+      "atk": 166,
       "def": 90,
       "speed": 130,
-      "spatk": 154,
-      "spdef": 90,
+      "spatk": 255,
+      "spdef": 200,
       "types": [
         "TYPE_PSYCHIC",
         "TYPE_PSYCHIC"
@@ -11828,11 +11828,11 @@
     {
       "species": "MEW",
       "hp": 100,
-      "atk": 100,
-      "def": 100,
-      "speed": 100,
-      "spatk": 100,
-      "spdef": 100,
+      "atk": 135,
+      "def": 135,
+      "speed": 135,
+      "spatk": 135,
+      "spdef": 135,
       "types": [
         "TYPE_PSYCHIC",
         "TYPE_PSYCHIC"
@@ -11846,7 +11846,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_LUM_BERRY",
+        "ITEM_NONE",
         "ITEM_LUM_BERRY"
       ],
       "genderRatio": 2.0,
@@ -11990,8 +11990,8 @@
       "spatk_yield": 0,
       "spdef_yield": 1,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_LUM_BERRY",
+        "ITEM_LUM_BERRY"
       ],
       "genderRatio": 0.125,
       "eggCycles": 20,
@@ -12119,12 +12119,12 @@
     },
     {
       "species": "MEGANIUM",
-      "hp": 80,
+      "hp": 120,
       "atk": 82,
-      "def": 100,
+      "def": 130,
       "speed": 80,
-      "spatk": 83,
-      "spdef": 100,
+      "spatk": 113,
+      "spdef": 130,
       "types": [
         "TYPE_GRASS",
         "TYPE_GRASS"
@@ -12339,12 +12339,12 @@
     },
     {
       "species": "TYPHLOSION",
-      "hp": 78,
+      "hp": 98,
       "atk": 84,
-      "def": 78,
+      "def": 88,
       "speed": 100,
-      "spatk": 109,
-      "spdef": 85,
+      "spatk": 139,
+      "spdef": 95,
       "types": [
         "TYPE_FIRE",
         "TYPE_FIRE"
@@ -12584,12 +12584,12 @@
     },
     {
       "species": "FERALIGATR",
-      "hp": 85,
-      "atk": 105,
-      "def": 100,
-      "speed": 78,
-      "spatk": 79,
-      "spdef": 83,
+      "hp": 145,
+      "atk": 125,
+      "def": 110,
+      "speed": 88,
+      "spatk": 99,
+      "spdef": 93,
       "types": [
         "TYPE_WATER",
         "TYPE_WATER"
@@ -12997,7 +12997,7 @@
     },
     {
       "species": "LEDYBA",
-      "hp": 40,
+      "hp": 60,
       "atk": 20,
       "def": 30,
       "speed": 55,
@@ -13017,7 +13017,7 @@
       "spdef_yield": 1,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SILVERPOWDER"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -13074,12 +13074,12 @@
     },
     {
       "species": "LEDIAN",
-      "hp": 55,
-      "atk": 35,
-      "def": 50,
-      "speed": 85,
-      "spatk": 55,
-      "spdef": 110,
+      "hp": 85,
+      "atk": 115,
+      "def": 110,
+      "speed": 95,
+      "spatk": 95,
+      "spdef": 130,
       "types": [
         "TYPE_BUG",
         "TYPE_FLYING"
@@ -13093,7 +13093,7 @@
       "spatk_yield": 0,
       "spdef_yield": 2,
       "items": [
-        "ITEM_NONE",
+        "ITEM_SILVERPOWDER",
         "ITEM_NONE"
       ],
       "genderRatio": 0.5,
@@ -13157,10 +13157,10 @@
     },
     {
       "species": "SPINARAK",
-      "hp": 40,
-      "atk": 60,
+      "hp": 50,
+      "atk": 70,
       "def": 40,
-      "speed": 30,
+      "speed": 50,
       "spatk": 40,
       "spdef": 40,
       "types": [
@@ -13168,7 +13168,7 @@
         "TYPE_POISON"
       ],
       "catchRate": 255,
-      "expYield": 54,
+      "expYield": 75,
       "hp_yield": 0,
       "atk_yield": 1,
       "def_yield": 0,
@@ -13177,7 +13177,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_POISON_BARB"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -13225,18 +13225,18 @@
     },
     {
       "species": "ARIADOS",
-      "hp": 70,
-      "atk": 90,
+      "hp": 110,
+      "atk": 120,
       "def": 70,
-      "speed": 40,
-      "spatk": 60,
-      "spdef": 60,
+      "speed": 90,
+      "spatk": 129,
+      "spdef": 90,
       "types": [
         "TYPE_BUG",
         "TYPE_POISON"
       ],
       "catchRate": 90,
-      "expYield": 134,
+      "expYield": 186,
       "hp_yield": 0,
       "atk_yield": 2,
       "def_yield": 0,
@@ -13244,8 +13244,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_POISON_BARB",
+        "ITEM_POISON_BARB"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -13295,8 +13295,8 @@
     },
     {
       "species": "CROBAT",
-      "hp": 85,
-      "atk": 90,
+      "hp": 95,
+      "atk": 120,
       "def": 80,
       "speed": 130,
       "spatk": 70,
@@ -13395,7 +13395,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_DEEPSEASCALE"
+        "ITEM_YELLOW_SHARD"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -13470,7 +13470,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_DEEPSEASCALE"
+        "ITEM_YELLOW_SHARD"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -13546,7 +13546,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_LIGHT_BALL",
         "ITEM_ORAN_BERRY"
       ],
       "genderRatio": 0.5,
@@ -13696,7 +13696,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_ORAN_BERRY",
         "ITEM_NONE"
       ],
       "genderRatio": 0.75,
@@ -13835,11 +13835,11 @@
     },
     {
       "species": "TOGETIC",
-      "hp": 55,
-      "atk": 40,
+      "hp": 95,
+      "atk": 80,
       "def": 85,
       "speed": 40,
-      "spatk": 80,
+      "spatk": 120,
       "spdef": 105,
       "types": [
         "TYPE_NORMAL",
@@ -14234,11 +14234,11 @@
     },
     {
       "species": "AMPHAROS",
-      "hp": 90,
+      "hp": 110,
       "atk": 75,
       "def": 75,
       "speed": 55,
-      "spatk": 115,
+      "spatk": 125,
       "spdef": 90,
       "types": [
         "TYPE_ELECTRIC",
@@ -14542,12 +14542,12 @@
     },
     {
       "species": "SUDOWOODO",
-      "hp": 70,
-      "atk": 100,
-      "def": 115,
+      "hp": 90,
+      "atk": 120,
+      "def": 135,
       "speed": 30,
       "spatk": 30,
-      "spdef": 65,
+      "spdef": 95,
       "types": [
         "TYPE_ROCK",
         "TYPE_ROCK"
@@ -14626,7 +14626,7 @@
       "atk": 75,
       "def": 75,
       "speed": 70,
-      "spatk": 90,
+      "spatk": 130,
       "spdef": 100,
       "types": [
         "TYPE_WATER",
@@ -15021,7 +15021,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_COBA_BERRY"
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -15147,18 +15147,18 @@
     },
     {
       "species": "YANMA",
-      "hp": 65,
-      "atk": 65,
-      "def": 45,
-      "speed": 95,
-      "spatk": 75,
-      "spdef": 45,
+      "hp": 85,
+      "atk": 105,
+      "def": 65,
+      "speed": 105,
+      "spatk": 120,
+      "spdef": 65,
       "types": [
         "TYPE_BUG",
         "TYPE_FLYING"
       ],
       "catchRate": 75,
-      "expYield": 147,
+      "expYield": 177,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 0,
@@ -15166,8 +15166,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_WIDE_LENS"
+        "ITEM_DRAGON_SCALE",
+        "ITEM_DRAGON_FANG"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -15383,7 +15383,7 @@
       "atk": 65,
       "def": 60,
       "speed": 110,
-      "spatk": 130,
+      "spatk": 145,
       "spdef": 95,
       "types": [
         "TYPE_PSYCHIC",
@@ -15457,11 +15457,11 @@
     },
     {
       "species": "UMBREON",
-      "hp": 95,
-      "atk": 65,
+      "hp": 115,
+      "atk": 85,
       "def": 110,
       "speed": 65,
-      "spatk": 60,
+      "spatk": 90,
       "spdef": 130,
       "types": [
         "TYPE_DARK",
@@ -15712,10 +15712,10 @@
     {
       "species": "MISDREAVUS",
       "hp": 60,
-      "atk": 60,
+      "atk": 99,
       "def": 60,
       "speed": 85,
-      "spatk": 85,
+      "spatk": 115,
       "spdef": 85,
       "types": [
         "TYPE_GHOST",
@@ -15730,8 +15730,8 @@
       "spatk_yield": 0,
       "spdef_yield": 1,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SPELL_TAG",
+        "ITEM_SPELL_TAG"
       ],
       "genderRatio": 0.5,
       "eggCycles": 25,
@@ -15794,18 +15794,18 @@
     },
     {
       "species": "UNOWN",
-      "hp": 48,
-      "atk": 72,
+      "hp": 68,
+      "atk": 102,
       "def": 48,
-      "speed": 48,
-      "spatk": 72,
+      "speed": 68,
+      "spatk": 102,
       "spdef": 48,
       "types": [
         "TYPE_PSYCHIC",
         "TYPE_PSYCHIC"
       ],
       "catchRate": 225,
-      "expYield": 61,
+      "expYield": 111,
       "hp_yield": 0,
       "atk_yield": 1,
       "def_yield": 0,
@@ -15836,7 +15836,7 @@
     },
     {
       "species": "WOBBUFFET",
-      "hp": 190,
+      "hp": 220,
       "atk": 33,
       "def": 58,
       "speed": 33,
@@ -15982,8 +15982,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SILVERPOWDER",
+        "ITEM_METAL_COAT"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -16039,18 +16039,18 @@
     },
     {
       "species": "FORRETRESS",
-      "hp": 75,
+      "hp": 95,
       "atk": 90,
-      "def": 140,
+      "def": 180,
       "speed": 40,
-      "spatk": 60,
-      "spdef": 60,
+      "spatk": 90,
+      "spdef": 160,
       "types": [
         "TYPE_BUG",
         "TYPE_STEEL"
       ],
       "catchRate": 75,
-      "expYield": 118,
+      "expYield": 198,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 2,
@@ -16058,7 +16058,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_METAL_COAT",
         "ITEM_NONE"
       ],
       "genderRatio": 0.5,
@@ -16119,12 +16119,12 @@
     },
     {
       "species": "DUNSPARCE",
-      "hp": 100,
-      "atk": 70,
-      "def": 70,
-      "speed": 45,
-      "spatk": 65,
-      "spdef": 65,
+      "hp": 130,
+      "atk": 100,
+      "def": 80,
+      "speed": 65,
+      "spatk": 95,
+      "spdef": 75,
       "types": [
         "TYPE_NORMAL",
         "TYPE_NORMAL"
@@ -16138,7 +16138,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_SILK_SCARF",
         "ITEM_NONE"
       ],
       "genderRatio": 0.5,
@@ -16208,12 +16208,12 @@
     },
     {
       "species": "GLIGAR",
-      "hp": 65,
-      "atk": 75,
-      "def": 105,
-      "speed": 85,
-      "spatk": 35,
-      "spdef": 65,
+      "hp": 85,
+      "atk": 115,
+      "def": 115,
+      "speed": 95,
+      "spatk": 85,
+      "spdef": 95,
       "types": [
         "TYPE_GROUND",
         "TYPE_FLYING"
@@ -16227,7 +16227,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_POISON_BARB",
         "ITEM_NONE"
       ],
       "genderRatio": 0.5,
@@ -16298,18 +16298,18 @@
     },
     {
       "species": "STEELIX",
-      "hp": 75,
-      "atk": 85,
-      "def": 200,
-      "speed": 30,
+      "hp": 105,
+      "atk": 115,
+      "def": 255,
+      "speed": 40,
       "spatk": 55,
-      "spdef": 65,
+      "spdef": 95,
       "types": [
         "TYPE_STEEL",
         "TYPE_GROUND"
       ],
       "catchRate": 25,
-      "expYield": 196,
+      "expYield": 236,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 2,
@@ -16584,7 +16584,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_POISON_BARB"
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -16642,18 +16642,18 @@
     },
     {
       "species": "SCIZOR",
-      "hp": 70,
-      "atk": 130,
-      "def": 100,
-      "speed": 65,
+      "hp": 100,
+      "atk": 149,
+      "def": 140,
+      "speed": 95,
       "spatk": 55,
-      "spdef": 80,
+      "spdef": 90,
       "types": [
         "TYPE_BUG",
         "TYPE_STEEL"
       ],
       "catchRate": 25,
-      "expYield": 200,
+      "expYield": 225,
       "hp_yield": 0,
       "atk_yield": 2,
       "def_yield": 0,
@@ -16661,8 +16661,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_METAL_COAT",
+        "ITEM_METAL_COAT"
       ],
       "genderRatio": 0.5,
       "eggCycles": 25,
@@ -16722,18 +16722,18 @@
     },
     {
       "species": "SHUCKLE",
-      "hp": 20,
-      "atk": 10,
-      "def": 230,
+      "hp": 30,
+      "atk": 25,
+      "def": 255,
       "speed": 5,
-      "spatk": 10,
-      "spdef": 230,
+      "spatk": 25,
+      "spdef": 255,
       "types": [
         "TYPE_BUG",
         "TYPE_ROCK"
       ],
       "catchRate": 190,
-      "expYield": 80,
+      "expYield": 140,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 1,
@@ -16741,8 +16741,8 @@
       "spatk_yield": 0,
       "spdef_yield": 1,
       "items": [
-        "ITEM_BERRY_JUICE",
-        "ITEM_BERRY_JUICE"
+        "ITEM_ORAN_BERRY",
+        "ITEM_ORAN_BERRY"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -16797,18 +16797,18 @@
     },
     {
       "species": "HERACROSS",
-      "hp": 80,
+      "hp": 110,
       "atk": 125,
       "def": 75,
       "speed": 85,
       "spatk": 40,
-      "spdef": 95,
+      "spdef": 125,
       "types": [
         "TYPE_BUG",
         "TYPE_FIGHTING"
       ],
       "catchRate": 45,
-      "expYield": 200,
+      "expYield": 210,
       "hp_yield": 0,
       "atk_yield": 2,
       "def_yield": 0,
@@ -16816,8 +16816,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_BLACK_BELT",
+        "ITEM_SILVERPOWDER"
       ],
       "genderRatio": 0.5,
       "eggCycles": 25,
@@ -16897,7 +16897,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_GRIP_CLAW",
+        "ITEM_NONE",
         "ITEM_QUICK_CLAW"
       ],
       "genderRatio": 0.5,
@@ -16990,8 +16990,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_ORAN_BERRY",
+        "ITEM_SITRUS_BERRY"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -17052,7 +17052,7 @@
     },
     {
       "species": "URSARING",
-      "hp": 90,
+      "hp": 120,
       "atk": 130,
       "def": 75,
       "speed": 55,
@@ -17063,7 +17063,7 @@
         "TYPE_NORMAL"
       ],
       "catchRate": 60,
-      "expYield": 189,
+      "expYield": 199,
       "hp_yield": 0,
       "atk_yield": 2,
       "def_yield": 0,
@@ -17071,8 +17071,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_ORAN_BERRY",
+        "ITEM_SITRUS_BERRY"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -17228,7 +17228,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_CHARCOAL",
         "ITEM_NONE"
       ],
       "genderRatio": 0.5,
@@ -17309,7 +17309,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_ASPEAR_BERRY",
         "ITEM_NONE"
       ],
       "genderRatio": 0.5,
@@ -17384,8 +17384,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_ASPEAR_BERRY",
+        "ITEM_NEVERMELTICE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -17464,7 +17464,7 @@
       "spdef_yield": 1,
       "items": [
         "ITEM_NONE",
-        "ITEM_HARD_STONE"
+        "ITEM_RED_SHARD"
       ],
       "genderRatio": 0.75,
       "eggCycles": 20,
@@ -17607,11 +17607,11 @@
     },
     {
       "species": "OCTILLERY",
-      "hp": 75,
-      "atk": 105,
+      "hp": 85,
+      "atk": 135,
       "def": 75,
       "speed": 45,
-      "spatk": 105,
+      "spatk": 135,
       "spdef": 75,
       "types": [
         "TYPE_WATER",
@@ -17782,7 +17782,7 @@
       "spatk_yield": 0,
       "spdef_yield": 2,
       "items": [
-        "ITEM_NONE",
+        "ITEM_MYSTIC_WATER",
         "ITEM_NONE"
       ],
       "genderRatio": 0.5,
@@ -17839,10 +17839,10 @@
     },
     {
       "species": "SKARMORY",
-      "hp": 65,
-      "atk": 80,
+      "hp": 85,
+      "atk": 95,
       "def": 140,
-      "speed": 70,
+      "speed": 90,
       "spatk": 40,
       "spdef": 70,
       "types": [
@@ -17859,7 +17859,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_METAL_COAT"
       ],
       "genderRatio": 0.5,
       "eggCycles": 25,
@@ -18082,11 +18082,11 @@
     },
     {
       "species": "KINGDRA",
-      "hp": 75,
+      "hp": 95,
       "atk": 95,
       "def": 95,
       "speed": 85,
-      "spatk": 95,
+      "spatk": 125,
       "spdef": 95,
       "types": [
         "TYPE_WATER",
@@ -18101,7 +18101,7 @@
       "spatk_yield": 1,
       "spdef_yield": 1,
       "items": [
-        "ITEM_NONE",
+        "ITEM_KINGS_ROCK",
         "ITEM_DRAGON_SCALE"
       ],
       "genderRatio": 0.5,
@@ -18175,7 +18175,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_PASSHO_BERRY"
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -18244,8 +18244,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_PASSHO_BERRY"
+        "ITEM_SOFT_SAND",
+        "ITEM_NONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -18301,11 +18301,11 @@
     },
     {
       "species": "PORYGON2",
-      "hp": 85,
-      "atk": 80,
+      "hp": 125,
+      "atk": 110,
       "def": 90,
-      "speed": 60,
-      "spatk": 105,
+      "speed": 90,
+      "spatk": 155,
       "spdef": 95,
       "types": [
         "TYPE_NORMAL",
@@ -18320,8 +18320,8 @@
       "spatk_yield": 2,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_UPGRADE",
+        "ITEM_UPGRADE"
       ],
       "genderRatio": 2.0,
       "eggCycles": 20,
@@ -18524,8 +18524,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_BLACK_BELT",
+        "ITEM_BLACK_BELT"
       ],
       "genderRatio": 0.0,
       "eggCycles": 25,
@@ -18574,12 +18574,12 @@
     },
     {
       "species": "HITMONTOP",
-      "hp": 50,
+      "hp": 60,
       "atk": 95,
       "def": 95,
-      "speed": 70,
+      "speed": 90,
       "spatk": 35,
-      "spdef": 110,
+      "spdef": 130,
       "types": [
         "TYPE_FIGHTING",
         "TYPE_FIGHTING"
@@ -18593,7 +18593,7 @@
       "spatk_yield": 0,
       "spdef_yield": 2,
       "items": [
-        "ITEM_NONE",
+        "ITEM_BLACK_BELT",
         "ITEM_NONE"
       ],
       "genderRatio": 0.0,
@@ -18667,8 +18667,8 @@
       "spatk_yield": 1,
       "spdef_yield": 0,
       "items": [
-        "ITEM_ASPEAR_BERRY",
-        "ITEM_ASPEAR_BERRY"
+        "ITEM_RAWST_BERRY",
+        "ITEM_RAWST_BERRY"
       ],
       "genderRatio": 1.0,
       "eggCycles": 25,
@@ -18748,7 +18748,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_MAGNET"
       ],
       "genderRatio": 0.25,
       "eggCycles": 25,
@@ -18821,8 +18821,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_ASPEAR_BERRY",
+        "ITEM_ASPEAR_BERRY"
       ],
       "genderRatio": 0.25,
       "eggCycles": 25,
@@ -18965,9 +18965,9 @@
       "species": "BLISSEY",
       "hp": 255,
       "atk": 10,
-      "def": 10,
+      "def": 50,
       "speed": 55,
-      "spatk": 75,
+      "spatk": 135,
       "spdef": 135,
       "types": [
         "TYPE_NORMAL",
@@ -18982,7 +18982,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_OVAL_STONE",
+        "ITEM_NONE",
         "ITEM_LUCKY_EGG"
       ],
       "genderRatio": 1.0,
@@ -19070,7 +19070,7 @@
       "atk": 85,
       "def": 75,
       "speed": 115,
-      "spatk": 115,
+      "spatk": 145,
       "spdef": 100,
       "types": [
         "TYPE_ELECTRIC",
@@ -19085,8 +19085,8 @@
       "spatk_yield": 1,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_BRIGHTPOWDER",
+        "ITEM_BRIGHTPOWDER"
       ],
       "genderRatio": 2.0,
       "eggCycles": 80,
@@ -19148,7 +19148,7 @@
     {
       "species": "ENTEI",
       "hp": 115,
-      "atk": 115,
+      "atk": 145,
       "def": 85,
       "speed": 100,
       "spatk": 90,
@@ -19166,8 +19166,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_CHARCOAL",
+        "ITEM_CHARCOAL"
       ],
       "genderRatio": 2.0,
       "eggCycles": 80,
@@ -19228,7 +19228,7 @@
     },
     {
       "species": "SUICUNE",
-      "hp": 100,
+      "hp": 140,
       "atk": 75,
       "def": 115,
       "speed": 85,
@@ -19247,8 +19247,8 @@
       "spatk_yield": 0,
       "spdef_yield": 2,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_MYSTIC_WATER",
+        "ITEM_MYSTIC_WATER"
       ],
       "genderRatio": 2.0,
       "eggCycles": 80,
@@ -19329,7 +19329,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_HARD_STONE",
         "ITEM_NONE"
       ],
       "genderRatio": 0.5,
@@ -19406,7 +19406,7 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
+        "ITEM_HARD_STONE",
         "ITEM_NONE"
       ],
       "genderRatio": 0.5,
@@ -19464,11 +19464,11 @@
     },
     {
       "species": "TYRANITAR",
-      "hp": 100,
-      "atk": 134,
+      "hp": 165,
+      "atk": 164,
       "def": 110,
-      "speed": 61,
-      "spatk": 95,
+      "speed": 71,
+      "spatk": 135,
       "spdef": 100,
       "types": [
         "TYPE_ROCK",
@@ -19566,11 +19566,11 @@
     },
     {
       "species": "LUGIA",
-      "hp": 106,
-      "atk": 90,
+      "hp": 206,
+      "atk": 120,
       "def": 130,
       "speed": 110,
-      "spatk": 90,
+      "spatk": 130,
       "spdef": 154,
       "types": [
         "TYPE_PSYCHIC",
@@ -19585,8 +19585,8 @@
       "spatk_yield": 0,
       "spdef_yield": 3,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_MYSTIC_WATER",
+        "ITEM_MYSTIC_WATER"
       ],
       "genderRatio": 2.0,
       "eggCycles": 120,
@@ -19664,8 +19664,8 @@
     },
     {
       "species": "HO_OH",
-      "hp": 106,
-      "atk": 130,
+      "hp": 136,
+      "atk": 190,
       "def": 90,
       "speed": 90,
       "spatk": 110,
@@ -19756,12 +19756,12 @@
     },
     {
       "species": "CELEBI",
-      "hp": 100,
+      "hp": 110,
       "atk": 100,
       "def": 100,
       "speed": 100,
-      "spatk": 100,
-      "spdef": 100,
+      "spatk": 140,
+      "spdef": 140,
       "types": [
         "TYPE_PSYCHIC",
         "TYPE_GRASS"
@@ -20009,11 +20009,11 @@
     },
     {
       "species": "SCEPTILE",
-      "hp": 70,
-      "atk": 85,
+      "hp": 90,
+      "atk": 105,
       "def": 65,
       "speed": 120,
-      "spatk": 105,
+      "spatk": 135,
       "spdef": 85,
       "types": [
         "TYPE_GRASS",
@@ -20255,9 +20255,9 @@
     {
       "species": "BLAZIKEN",
       "hp": 80,
-      "atk": 120,
+      "atk": 130,
       "def": 70,
-      "speed": 80,
+      "speed": 90,
       "spatk": 110,
       "spdef": 70,
       "types": [
@@ -20493,11 +20493,11 @@
     },
     {
       "species": "SWAMPERT",
-      "hp": 100,
+      "hp": 145,
       "atk": 110,
       "def": 90,
       "speed": 60,
-      "spatk": 85,
+      "spatk": 105,
       "spdef": 90,
       "types": [
         "TYPE_WATER",
@@ -20895,8 +20895,8 @@
     },
     {
       "species": "WURMPLE",
-      "hp": 45,
-      "atk": 45,
+      "hp": 55,
+      "atk": 55,
       "def": 35,
       "speed": 20,
       "spatk": 20,
@@ -20906,7 +20906,7 @@
         "TYPE_BUG"
       ],
       "catchRate": 255,
-      "expYield": 54,
+      "expYield": 74,
       "hp_yield": 1,
       "atk_yield": 0,
       "def_yield": 0,
@@ -20937,9 +20937,9 @@
     },
     {
       "species": "SILCOON",
-      "hp": 50,
+      "hp": 65,
       "atk": 35,
-      "def": 55,
+      "def": 95,
       "speed": 15,
       "spatk": 25,
       "spdef": 25,
@@ -20948,7 +20948,7 @@
         "TYPE_BUG"
       ],
       "catchRate": 120,
-      "expYield": 72,
+      "expYield": 101,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 2,
@@ -20979,18 +20979,18 @@
     },
     {
       "species": "BEAUTIFLY",
-      "hp": 60,
-      "atk": 70,
+      "hp": 80,
+      "atk": 90,
       "def": 50,
-      "speed": 65,
-      "spatk": 90,
-      "spdef": 50,
+      "speed": 95,
+      "spatk": 129,
+      "spdef": 95,
       "types": [
         "TYPE_BUG",
         "TYPE_FLYING"
       ],
       "catchRate": 45,
-      "expYield": 161,
+      "expYield": 182,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 0,
@@ -21053,9 +21053,9 @@
     },
     {
       "species": "CASCOON",
-      "hp": 50,
+      "hp": 60,
       "atk": 35,
-      "def": 55,
+      "def": 85,
       "speed": 15,
       "spatk": 25,
       "spdef": 25,
@@ -21064,7 +21064,7 @@
         "TYPE_BUG"
       ],
       "catchRate": 120,
-      "expYield": 72,
+      "expYield": 102,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 2,
@@ -21095,18 +21095,18 @@
     },
     {
       "species": "DUSTOX",
-      "hp": 60,
-      "atk": 50,
-      "def": 70,
-      "speed": 65,
-      "spatk": 50,
-      "spdef": 90,
+      "hp": 95,
+      "atk": 90,
+      "def": 110,
+      "speed": 85,
+      "spatk": 90,
+      "spdef": 120,
       "types": [
         "TYPE_BUG",
         "TYPE_POISON"
       ],
       "catchRate": 45,
-      "expYield": 161,
+      "expYield": 180,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 0,
@@ -21576,7 +21576,7 @@
       "atk": 100,
       "def": 60,
       "speed": 80,
-      "spatk": 90,
+      "spatk": 135,
       "spdef": 60,
       "types": [
         "TYPE_GRASS",
@@ -22122,11 +22122,11 @@
     },
     {
       "species": "GARDEVOIR",
-      "hp": 68,
+      "hp": 88,
       "atk": 65,
       "def": 65,
       "speed": 80,
-      "spatk": 125,
+      "spatk": 135,
       "spdef": 115,
       "types": [
         "TYPE_PSYCHIC",
@@ -22279,12 +22279,12 @@
     },
     {
       "species": "MASQUERAIN",
-      "hp": 70,
-      "atk": 60,
-      "def": 62,
-      "speed": 60,
-      "spatk": 80,
-      "spdef": 82,
+      "hp": 90,
+      "atk": 100,
+      "def": 102,
+      "speed": 90,
+      "spatk": 120,
+      "spdef": 102,
       "types": [
         "TYPE_BUG",
         "TYPE_FLYING"
@@ -22532,7 +22532,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_PECHA_BERRY"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -22615,7 +22615,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_ORAN_BERRY"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -22702,8 +22702,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_ORAN_BERRY",
+        "ITEM_SITRUS_BERRY"
       ],
       "genderRatio": 0.5,
       "eggCycles": 15,
@@ -22843,8 +22843,8 @@
     {
       "species": "NINJASK",
       "hp": 61,
-      "atk": 90,
-      "def": 45,
+      "atk": 110,
+      "def": 65,
       "speed": 160,
       "spatk": 50,
       "spdef": 50,
@@ -22921,10 +22921,10 @@
     {
       "species": "SHEDINJA",
       "hp": 1,
-      "atk": 90,
+      "atk": 130,
       "def": 45,
-      "speed": 40,
-      "spatk": 30,
+      "speed": 60,
+      "spatk": 110,
       "spdef": 30,
       "types": [
         "TYPE_BUG",
@@ -22940,7 +22940,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SILVERPOWDER"
       ],
       "genderRatio": 2.0,
       "eggCycles": 15,
@@ -23148,10 +23148,10 @@
     {
       "species": "EXPLOUD",
       "hp": 104,
-      "atk": 91,
+      "atk": 121,
       "def": 63,
       "speed": 68,
-      "spatk": 91,
+      "spatk": 121,
       "spdef": 63,
       "types": [
         "TYPE_NORMAL",
@@ -23705,11 +23705,11 @@
     },
     {
       "species": "SABLEYE",
-      "hp": 50,
-      "atk": 75,
+      "hp": 70,
+      "atk": 115,
       "def": 75,
       "speed": 50,
-      "spatk": 65,
+      "spatk": 95,
       "spdef": 65,
       "types": [
         "TYPE_DARK",
@@ -23793,8 +23793,8 @@
     },
     {
       "species": "MAWILE",
-      "hp": 50,
-      "atk": 85,
+      "hp": 70,
+      "atk": 115,
       "def": 85,
       "speed": 50,
       "spatk": 55,
@@ -24038,12 +24038,12 @@
     },
     {
       "species": "AGGRON",
-      "hp": 70,
+      "hp": 130,
       "atk": 110,
-      "def": 180,
-      "speed": 50,
+      "def": 240,
+      "speed": 70,
       "spatk": 60,
-      "spdef": 60,
+      "spdef": 180,
       "types": [
         "TYPE_STEEL",
         "TYPE_ROCK"
@@ -24244,7 +24244,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_CHESTO_BERRY"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -24463,7 +24463,7 @@
       "atk": 50,
       "def": 40,
       "speed": 95,
-      "spatk": 85,
+      "spatk": 105,
       "spdef": 75,
       "types": [
         "TYPE_ELECTRIC",
@@ -24533,7 +24533,7 @@
       "atk": 40,
       "def": 50,
       "speed": 95,
-      "spatk": 75,
+      "spatk": 105,
       "spdef": 85,
       "types": [
         "TYPE_ELECTRIC",
@@ -24549,7 +24549,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SILVERPOWDER"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -25062,12 +25062,12 @@
     },
     {
       "species": "SHARPEDO",
-      "hp": 70,
-      "atk": 120,
-      "def": 40,
-      "speed": 95,
-      "spatk": 95,
-      "spdef": 40,
+      "hp": 80,
+      "atk": 140,
+      "def": 50,
+      "speed": 105,
+      "spatk": 115,
+      "spdef": 50,
       "types": [
         "TYPE_WATER",
         "TYPE_DARK"
@@ -25220,7 +25220,7 @@
     },
     {
       "species": "WAILORD",
-      "hp": 170,
+      "hp": 230,
       "atk": 90,
       "def": 45,
       "speed": 60,
@@ -25231,7 +25231,7 @@
         "TYPE_WATER"
       ],
       "catchRate": 60,
-      "expYield": 206,
+      "expYield": 236,
       "hp_yield": 2,
       "atk_yield": 0,
       "def_yield": 0,
@@ -25549,7 +25549,7 @@
       "spatk_yield": 0,
       "spdef_yield": 1,
       "items": [
-        "ITEM_NONE",
+        "ITEM_HEART_SCALE",
         "ITEM_TANGA_BERRY"
       ],
       "genderRatio": 0.5,
@@ -25788,7 +25788,7 @@
     {
       "species": "TRAPINCH",
       "hp": 45,
-      "atk": 100,
+      "atk": 110,
       "def": 45,
       "speed": 10,
       "spatk": 45,
@@ -25798,7 +25798,7 @@
         "TYPE_GROUND"
       ],
       "catchRate": 255,
-      "expYield": 73,
+      "expYield": 83,
       "hp_yield": 0,
       "atk_yield": 1,
       "def_yield": 0,
@@ -25858,18 +25858,18 @@
     },
     {
       "species": "VIBRAVA",
-      "hp": 50,
-      "atk": 70,
+      "hp": 65,
+      "atk": 90,
       "def": 50,
       "speed": 70,
-      "spatk": 50,
+      "spatk": 90,
       "spdef": 50,
       "types": [
         "TYPE_GROUND",
         "TYPE_DRAGON"
       ],
       "catchRate": 120,
-      "expYield": 126,
+      "expYield": 136,
       "hp_yield": 0,
       "atk_yield": 1,
       "def_yield": 0,
@@ -25935,18 +25935,18 @@
     },
     {
       "species": "FLYGON",
-      "hp": 80,
-      "atk": 100,
+      "hp": 130,
+      "atk": 120,
       "def": 80,
       "speed": 100,
-      "spatk": 80,
+      "spatk": 120,
       "spdef": 80,
       "types": [
         "TYPE_GROUND",
         "TYPE_DRAGON"
       ],
       "catchRate": 45,
-      "expYield": 197,
+      "expYield": 227,
       "hp_yield": 0,
       "atk_yield": 1,
       "def_yield": 0,
@@ -26096,11 +26096,11 @@
     },
     {
       "species": "CACTURNE",
-      "hp": 70,
-      "atk": 115,
+      "hp": 90,
+      "atk": 125,
       "def": 60,
       "speed": 55,
-      "spatk": 115,
+      "spatk": 125,
       "spdef": 60,
       "types": [
         "TYPE_GRASS",
@@ -26430,11 +26430,11 @@
     },
     {
       "species": "SEVIPER",
-      "hp": 73,
-      "atk": 100,
+      "hp": 113,
+      "atk": 135,
       "def": 60,
-      "speed": 65,
-      "spatk": 100,
+      "speed": 85,
+      "spatk": 120,
       "spdef": 60,
       "types": [
         "TYPE_POISON",
@@ -26450,7 +26450,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_KINGS_ROCK"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -26508,10 +26508,10 @@
     {
       "species": "LUNATONE",
       "hp": 70,
-      "atk": 55,
-      "def": 65,
+      "atk": 95,
+      "def": 85,
       "speed": 70,
-      "spatk": 95,
+      "spatk": 115,
       "spdef": 85,
       "types": [
         "TYPE_ROCK",
@@ -26597,8 +26597,8 @@
       "atk": 95,
       "def": 85,
       "speed": 70,
-      "spatk": 55,
-      "spdef": 65,
+      "spatk": 115,
+      "spdef": 85,
       "types": [
         "TYPE_ROCK",
         "TYPE_PSYCHIC"
@@ -26701,8 +26701,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_RAWST_BERRY",
+        "ITEM_RAWST_BERRY"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -26772,8 +26772,8 @@
       "spatk_yield": 0,
       "spdef_yield": 0,
       "items": [
-        "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_RAWST_BERRY",
+        "ITEM_RAWST_BERRY"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -26913,11 +26913,11 @@
     },
     {
       "species": "CRAWDAUNT",
-      "hp": 63,
-      "atk": 120,
+      "hp": 83,
+      "atk": 130,
       "def": 85,
       "speed": 55,
-      "spatk": 90,
+      "spatk": 110,
       "spdef": 55,
       "types": [
         "TYPE_WATER",
@@ -27104,7 +27104,7 @@
       "spdef_yield": 2,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_POISON_BARB"
       ],
       "genderRatio": 2.0,
       "eggCycles": 20,
@@ -27185,7 +27185,7 @@
         "TYPE_GRASS"
       ],
       "catchRate": 45,
-      "expYield": 99,
+      "expYield": 121,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 0,
@@ -27247,18 +27247,18 @@
     },
     {
       "species": "CRADILY",
-      "hp": 86,
+      "hp": 116,
       "atk": 81,
-      "def": 97,
+      "def": 117,
       "speed": 43,
-      "spatk": 81,
-      "spdef": 107,
+      "spatk": 101,
+      "spdef": 127,
       "types": [
         "TYPE_ROCK",
         "TYPE_GRASS"
       ],
       "catchRate": 45,
-      "expYield": 199,
+      "expYield": 201,
       "hp_yield": 0,
       "atk_yield": 0,
       "def_yield": 0,
@@ -27338,7 +27338,7 @@
         "TYPE_BUG"
       ],
       "catchRate": 45,
-      "expYield": 99,
+      "expYield": 119,
       "hp_yield": 0,
       "atk_yield": 1,
       "def_yield": 0,
@@ -27347,7 +27347,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_NEVERMELTICE"
       ],
       "genderRatio": 0.125,
       "eggCycles": 30,
@@ -27413,7 +27413,7 @@
         "TYPE_BUG"
       ],
       "catchRate": 45,
-      "expYield": 199,
+      "expYield": 200,
       "hp_yield": 0,
       "atk_yield": 2,
       "def_yield": 0,
@@ -27422,7 +27422,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_MOON_STONE"
       ],
       "genderRatio": 0.125,
       "eggCycles": 30,
@@ -27504,7 +27504,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SUN_STONE"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -27627,12 +27627,12 @@
     },
     {
       "species": "CASTFORM",
-      "hp": 70,
-      "atk": 70,
-      "def": 70,
-      "speed": 70,
-      "spatk": 70,
-      "spdef": 70,
+      "hp": 85,
+      "atk": 105,
+      "def": 85,
+      "speed": 85,
+      "spatk": 105,
+      "spdef": 85,
       "types": [
         "TYPE_NORMAL",
         "TYPE_NORMAL"
@@ -27706,11 +27706,11 @@
     },
     {
       "species": "KECLEON",
-      "hp": 60,
-      "atk": 90,
+      "hp": 80,
+      "atk": 110,
       "def": 70,
-      "speed": 40,
-      "spatk": 60,
+      "speed": 50,
+      "spatk": 90,
       "spdef": 120,
       "types": [
         "TYPE_NORMAL",
@@ -27884,11 +27884,11 @@
     },
     {
       "species": "BANETTE",
-      "hp": 64,
+      "hp": 84,
       "atk": 115,
       "def": 65,
       "speed": 65,
-      "spatk": 83,
+      "spatk": 133,
       "spdef": 63,
       "types": [
         "TYPE_GHOST",
@@ -28142,18 +28142,18 @@
     },
     {
       "species": "TROPIUS",
-      "hp": 99,
-      "atk": 68,
+      "hp": 199,
+      "atk": 88,
       "def": 83,
       "speed": 51,
-      "spatk": 72,
+      "spatk": 92,
       "spdef": 87,
       "types": [
         "TYPE_GRASS",
         "TYPE_FLYING"
       ],
       "catchRate": 200,
-      "expYield": 169,
+      "expYield": 219,
       "hp_yield": 2,
       "atk_yield": 0,
       "def_yield": 0,
@@ -28304,11 +28304,11 @@
     },
     {
       "species": "ABSOL",
-      "hp": 65,
+      "hp": 85,
       "atk": 130,
       "def": 60,
       "speed": 75,
-      "spatk": 75,
+      "spatk": 125,
       "spdef": 60,
       "types": [
         "TYPE_DARK",
@@ -28516,10 +28516,10 @@
     {
       "species": "GLALIE",
       "hp": 80,
-      "atk": 80,
+      "atk": 120,
       "def": 80,
-      "speed": 80,
-      "spatk": 80,
+      "speed": 90,
+      "spatk": 120,
       "spdef": 80,
       "types": [
         "TYPE_ICE",
@@ -28613,7 +28613,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_POISON_BARB"
       ],
       "genderRatio": 0.5,
       "eggCycles": 20,
@@ -28744,11 +28744,11 @@
     },
     {
       "species": "WALREIN",
-      "hp": 110,
-      "atk": 80,
+      "hp": 140,
+      "atk": 120,
       "def": 90,
       "speed": 65,
-      "spatk": 95,
+      "spatk": 115,
       "spdef": 90,
       "types": [
         "TYPE_ICE",
@@ -28892,11 +28892,11 @@
     },
     {
       "species": "HUNTAIL",
-      "hp": 55,
-      "atk": 104,
+      "hp": 95,
+      "atk": 134,
       "def": 105,
-      "speed": 52,
-      "spatk": 94,
+      "speed": 82,
+      "spatk": 134,
       "spdef": 75,
       "types": [
         "TYPE_WATER",
@@ -28965,11 +28965,11 @@
     },
     {
       "species": "GOREBYSS",
-      "hp": 55,
-      "atk": 84,
+      "hp": 95,
+      "atk": 114,
       "def": 105,
-      "speed": 52,
-      "spatk": 114,
+      "speed": 82,
+      "spatk": 134,
       "spdef": 75,
       "types": [
         "TYPE_WATER",
@@ -29042,10 +29042,10 @@
       "species": "RELICANTH",
       "hp": 100,
       "atk": 90,
-      "def": 130,
+      "def": 160,
       "speed": 55,
-      "spatk": 45,
-      "spdef": 65,
+      "spatk": 85,
+      "spdef": 95,
       "types": [
         "TYPE_WATER",
         "TYPE_ROCK"
@@ -29142,7 +29142,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_HEART_SCALE",
-        "ITEM_NONE"
+        "ITEM_CHESTO_BERRY"
       ],
       "genderRatio": 0.75,
       "eggCycles": 20,
@@ -29343,11 +29343,11 @@
     },
     {
       "species": "SALAMENCE",
-      "hp": 95,
-      "atk": 135,
+      "hp": 115,
+      "atk": 155,
       "def": 80,
-      "speed": 100,
-      "spatk": 110,
+      "speed": 130,
+      "spatk": 130,
       "spdef": 80,
       "types": [
         "TYPE_DRAGON",
@@ -29551,11 +29551,11 @@
     },
     {
       "species": "METAGROSS",
-      "hp": 80,
+      "hp": 180,
       "atk": 135,
       "def": 130,
       "speed": 70,
-      "spatk": 95,
+      "spatk": 125,
       "spdef": 90,
       "types": [
         "TYPE_STEEL",
@@ -29635,10 +29635,10 @@
     },
     {
       "species": "REGIROCK",
-      "hp": 80,
-      "atk": 100,
-      "def": 200,
-      "speed": 50,
+      "hp": 90,
+      "atk": 110,
+      "def": 250,
+      "speed": 70,
       "spatk": 50,
       "spdef": 100,
       "types": [
@@ -29655,7 +29655,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SPELL_TAG"
       ],
       "genderRatio": 2.0,
       "eggCycles": 80,
@@ -29720,12 +29720,12 @@
     },
     {
       "species": "REGICE",
-      "hp": 80,
+      "hp": 90,
       "atk": 50,
       "def": 100,
-      "speed": 50,
-      "spatk": 100,
-      "spdef": 200,
+      "speed": 70,
+      "spatk": 110,
+      "spdef": 250,
       "types": [
         "TYPE_ICE",
         "TYPE_ICE"
@@ -29740,7 +29740,7 @@
       "spdef_yield": 3,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_SPELL_TAG"
       ],
       "genderRatio": 2.0,
       "eggCycles": 80,
@@ -29805,12 +29805,12 @@
     },
     {
       "species": "REGISTEEL",
-      "hp": 80,
-      "atk": 75,
-      "def": 150,
+      "hp": 90,
+      "atk": 95,
+      "def": 175,
       "speed": 50,
-      "spatk": 75,
-      "spdef": 150,
+      "spatk": 95,
+      "spdef": 175,
       "types": [
         "TYPE_STEEL",
         "TYPE_STEEL"
@@ -30008,7 +30008,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_GREEN_SHARD"
       ],
       "genderRatio": 0.0,
       "eggCycles": 120,
@@ -30085,11 +30085,11 @@
     },
     {
       "species": "KYOGRE",
-      "hp": 100,
+      "hp": 200,
       "atk": 100,
       "def": 90,
       "speed": 90,
-      "spatk": 150,
+      "spatk": 200,
       "spdef": 140,
       "types": [
         "TYPE_WATER",
@@ -30105,7 +30105,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_HARD_STONE"
       ],
       "genderRatio": 2.0,
       "eggCycles": 120,
@@ -30169,11 +30169,11 @@
     },
     {
       "species": "GROUDON",
-      "hp": 100,
-      "atk": 150,
+      "hp": 150,
+      "atk": 200,
       "def": 140,
       "speed": 90,
-      "spatk": 100,
+      "spatk": 150,
       "spdef": 90,
       "types": [
         "TYPE_GROUND",
@@ -30189,7 +30189,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_HARD_STONE"
       ],
       "genderRatio": 2.0,
       "eggCycles": 120,
@@ -30263,11 +30263,11 @@
     },
     {
       "species": "RAYQUAZA",
-      "hp": 105,
-      "atk": 150,
+      "hp": 155,
+      "atk": 205,
       "def": 90,
-      "speed": 95,
-      "spatk": 150,
+      "speed": 115,
+      "spatk": 225,
       "spdef": 90,
       "types": [
         "TYPE_DRAGON",
@@ -30283,7 +30283,7 @@
       "spdef_yield": 0,
       "items": [
         "ITEM_NONE",
-        "ITEM_NONE"
+        "ITEM_HARD_STONE"
       ],
       "genderRatio": 2.0,
       "eggCycles": 120,
@@ -30363,10 +30363,10 @@
     {
       "species": "JIRACHI",
       "hp": 100,
-      "atk": 100,
+      "atk": 130,
       "def": 100,
       "speed": 100,
-      "spatk": 100,
+      "spatk": 130,
       "spdef": 100,
       "types": [
         "TYPE_STEEL",
@@ -30450,12 +30450,12 @@
     },
     {
       "species": "DEOXYS",
-      "hp": 50,
-      "atk": 150,
-      "def": 50,
-      "speed": 150,
-      "spatk": 150,
-      "spdef": 50,
+      "hp": 75,
+      "atk": 175,
+      "def": 75,
+      "speed": 175,
+      "spatk": 175,
+      "spdef": 75,
       "types": [
         "TYPE_PSYCHIC",
         "TYPE_PSYCHIC"
@@ -30706,7 +30706,7 @@
     },
     {
       "species": "TORTERRA",
-      "hp": 95,
+      "hp": 165,
       "atk": 109,
       "def": 105,
       "speed": 56,
@@ -30963,10 +30963,10 @@
     {
       "species": "INFERNAPE",
       "hp": 76,
-      "atk": 104,
+      "atk": 134,
       "def": 71,
       "speed": 108,
-      "spatk": 104,
+      "spatk": 124,
       "spdef": 71,
       "types": [
         "TYPE_FIRE",
@@ -31215,8 +31215,8 @@
     },
     {
       "species": "EMPOLEON",
-      "hp": 84,
-      "atk": 86,
+      "hp": 124,
+      "atk": 126,
       "def": 88,
       "speed": 60,
       "spatk": 111,
@@ -31445,7 +31445,7 @@
     {
       "species": "STARAPTOR",
       "hp": 85,
-      "atk": 120,
+      "atk": 140,
       "def": 70,
       "speed": 100,
       "spatk": 50,
@@ -31725,12 +31725,12 @@
     },
     {
       "species": "KRICKETUNE",
-      "hp": 77,
+      "hp": 117,
       "atk": 85,
-      "def": 51,
+      "def": 81,
       "speed": 65,
       "spatk": 55,
-      "spdef": 51,
+      "spdef": 81,
       "types": [
         "TYPE_BUG",
         "TYPE_BUG"
@@ -32255,9 +32255,9 @@
     {
       "species": "RAMPARDOS",
       "hp": 97,
-      "atk": 165,
+      "atk": 175,
       "def": 60,
-      "speed": 58,
+      "speed": 78,
       "spatk": 65,
       "spdef": 50,
       "types": [
@@ -32563,9 +32563,9 @@
     },
     {
       "species": "WORMADAM",
-      "hp": 60,
+      "hp": 90,
       "atk": 59,
-      "def": 85,
+      "def": 135,
       "speed": 36,
       "spatk": 79,
       "spdef": 105,
@@ -32640,10 +32640,10 @@
     {
       "species": "MOTHIM",
       "hp": 70,
-      "atk": 94,
+      "atk": 114,
       "def": 50,
-      "speed": 66,
-      "spatk": 94,
+      "speed": 96,
+      "spatk": 134,
       "spdef": 50,
       "types": [
         "TYPE_BUG",
@@ -32759,7 +32759,7 @@
     },
     {
       "species": "VESPIQUEN",
-      "hp": 70,
+      "hp": 120,
       "atk": 80,
       "def": 102,
       "speed": 40,
@@ -33140,7 +33140,7 @@
       "atk": 60,
       "def": 70,
       "speed": 85,
-      "spatk": 87,
+      "spatk": 117,
       "spdef": 78,
       "types": [
         "TYPE_GRASS",
@@ -33274,7 +33274,7 @@
     },
     {
       "species": "GASTRODON",
-      "hp": 111,
+      "hp": 141,
       "atk": 83,
       "def": 68,
       "speed": 39,
@@ -33528,10 +33528,10 @@
       "species": "DRIFBLIM",
       "hp": 150,
       "atk": 80,
-      "def": 44,
+      "def": 84,
       "speed": 80,
       "spatk": 90,
-      "spdef": 54,
+      "spdef": 64,
       "types": [
         "TYPE_GHOST",
         "TYPE_FLYING"
@@ -33774,11 +33774,11 @@
     },
     {
       "species": "MISMAGIUS",
-      "hp": 60,
+      "hp": 90,
       "atk": 60,
       "def": 60,
       "speed": 105,
-      "spatk": 105,
+      "spatk": 135,
       "spdef": 105,
       "types": [
         "TYPE_GHOST",
@@ -34434,7 +34434,7 @@
       "species": "BRONZONG",
       "hp": 67,
       "atk": 89,
-      "def": 116,
+      "def": 146,
       "speed": 33,
       "spatk": 79,
       "spdef": 116,
@@ -34830,7 +34830,7 @@
     },
     {
       "species": "SPIRITOMB",
-      "hp": 50,
+      "hp": 120,
       "atk": 92,
       "def": 108,
       "speed": 35,
@@ -35071,7 +35071,7 @@
     },
     {
       "species": "GARCHOMP",
-      "hp": 108,
+      "hp": 148,
       "atk": 130,
       "def": 95,
       "speed": 102,
@@ -35328,10 +35328,10 @@
     {
       "species": "LUCARIO",
       "hp": 70,
-      "atk": 110,
+      "atk": 130,
       "def": 70,
-      "speed": 90,
-      "spatk": 115,
+      "speed": 100,
+      "spatk": 145,
       "spdef": 70,
       "types": [
         "TYPE_FIGHTING",
@@ -35490,7 +35490,7 @@
     },
     {
       "species": "HIPPOWDON",
-      "hp": 108,
+      "hp": 148,
       "atk": 112,
       "def": 118,
       "speed": 47,
@@ -35648,8 +35648,8 @@
     },
     {
       "species": "DRAPION",
-      "hp": 70,
-      "atk": 90,
+      "hp": 130,
+      "atk": 110,
       "def": 110,
       "speed": 95,
       "spatk": 60,
@@ -35913,10 +35913,10 @@
     {
       "species": "CARNIVINE",
       "hp": 74,
-      "atk": 100,
+      "atk": 125,
       "def": 72,
-      "speed": 46,
-      "spatk": 90,
+      "speed": 56,
+      "spatk": 125,
       "spdef": 72,
       "types": [
         "TYPE_GRASS",
@@ -36062,7 +36062,7 @@
     },
     {
       "species": "LUMINEON",
-      "hp": 69,
+      "hp": 129,
       "atk": 69,
       "def": 76,
       "speed": 91,
@@ -36285,8 +36285,8 @@
     },
     {
       "species": "ABOMASNOW",
-      "hp": 90,
-      "atk": 92,
+      "hp": 130,
+      "atk": 122,
       "def": 75,
       "speed": 60,
       "spatk": 92,
@@ -36470,7 +36470,7 @@
     },
     {
       "species": "MAGNEZONE",
-      "hp": 70,
+      "hp": 130,
       "atk": 70,
       "def": 115,
       "speed": 60,
@@ -36544,7 +36544,7 @@
     },
     {
       "species": "LICKILICKY",
-      "hp": 110,
+      "hp": 150,
       "atk": 85,
       "def": 95,
       "speed": 50,
@@ -36642,7 +36642,7 @@
       "species": "RHYPERIOR",
       "hp": 115,
       "atk": 140,
-      "def": 130,
+      "def": 160,
       "speed": 40,
       "spatk": 55,
       "spdef": 55,
@@ -36739,7 +36739,7 @@
     },
     {
       "species": "TANGROWTH",
-      "hp": 100,
+      "hp": 130,
       "atk": 100,
       "def": 125,
       "speed": 50,
@@ -36827,7 +36827,7 @@
     {
       "species": "ELECTIVIRE",
       "hp": 75,
-      "atk": 123,
+      "atk": 143,
       "def": 67,
       "speed": 95,
       "spatk": 95,
@@ -36917,7 +36917,7 @@
       "atk": 95,
       "def": 67,
       "speed": 83,
-      "spatk": 125,
+      "spatk": 145,
       "spdef": 95,
       "types": [
         "TYPE_FIRE",
@@ -37087,12 +37087,12 @@
     },
     {
       "species": "YANMEGA",
-      "hp": 86,
-      "atk": 76,
+      "hp": 136,
+      "atk": 116,
       "def": 86,
-      "speed": 95,
-      "spatk": 116,
-      "spdef": 56,
+      "speed": 125,
+      "spatk": 146,
+      "spdef": 66,
       "types": [
         "TYPE_BUG",
         "TYPE_FLYING"
@@ -37164,7 +37164,7 @@
       "species": "LEAFEON",
       "hp": 65,
       "atk": 110,
-      "def": 130,
+      "def": 140,
       "speed": 95,
       "spatk": 60,
       "spdef": 65,
@@ -37245,7 +37245,7 @@
       "atk": 60,
       "def": 110,
       "speed": 65,
-      "spatk": 130,
+      "spatk": 149,
       "spdef": 95,
       "types": [
         "TYPE_ICE",
@@ -37316,12 +37316,12 @@
     },
     {
       "species": "GLISCOR",
-      "hp": 75,
-      "atk": 95,
-      "def": 125,
+      "hp": 125,
+      "atk": 125,
+      "def": 145,
       "speed": 95,
       "spatk": 45,
-      "spdef": 75,
+      "spdef": 100,
       "types": [
         "TYPE_GROUND",
         "TYPE_FLYING"
@@ -37408,7 +37408,7 @@
     },
     {
       "species": "MAMOSWINE",
-      "hp": 110,
+      "hp": 165,
       "atk": 130,
       "def": 80,
       "speed": 80,
@@ -37491,8 +37491,8 @@
       "hp": 85,
       "atk": 80,
       "def": 70,
-      "speed": 90,
-      "spatk": 135,
+      "speed": 110,
+      "spatk": 195,
       "spdef": 75,
       "types": [
         "TYPE_NORMAL",
@@ -37570,7 +37570,7 @@
     {
       "species": "GALLADE",
       "hp": 68,
-      "atk": 125,
+      "atk": 145,
       "def": 65,
       "speed": 80,
       "spatk": 65,
@@ -37752,7 +37752,7 @@
     },
     {
       "species": "DUSKNOIR",
-      "hp": 45,
+      "hp": 105,
       "atk": 100,
       "def": 135,
       "speed": 45,
@@ -37848,7 +37848,7 @@
       "atk": 80,
       "def": 70,
       "speed": 110,
-      "spatk": 80,
+      "spatk": 130,
       "spdef": 70,
       "types": [
         "TYPE_ICE",
@@ -37929,10 +37929,10 @@
     {
       "species": "ROTOM",
       "hp": 50,
-      "atk": 50,
+      "atk": 90,
       "def": 77,
-      "speed": 91,
-      "spatk": 95,
+      "speed": 131,
+      "spatk": 115,
       "spdef": 77,
       "types": [
         "TYPE_ELECTRIC",
@@ -38006,7 +38006,7 @@
       "atk": 75,
       "def": 130,
       "speed": 95,
-      "spatk": 75,
+      "spatk": 125,
       "spdef": 130,
       "types": [
         "TYPE_PSYCHIC",
@@ -38094,7 +38094,7 @@
       "atk": 105,
       "def": 105,
       "speed": 80,
-      "spatk": 105,
+      "spatk": 145,
       "spdef": 105,
       "types": [
         "TYPE_PSYCHIC",
@@ -38182,7 +38182,7 @@
       "atk": 125,
       "def": 70,
       "speed": 115,
-      "spatk": 125,
+      "spatk": 145,
       "spdef": 70,
       "types": [
         "TYPE_PSYCHIC",
@@ -38270,7 +38270,7 @@
     },
     {
       "species": "DIALGA",
-      "hp": 100,
+      "hp": 120,
       "atk": 120,
       "def": 120,
       "speed": 90,
@@ -38363,7 +38363,7 @@
     },
     {
       "species": "PALKIA",
-      "hp": 90,
+      "hp": 110,
       "atk": 120,
       "def": 100,
       "speed": 100,
@@ -38460,7 +38460,7 @@
     },
     {
       "species": "HEATRAN",
-      "hp": 91,
+      "hp": 121,
       "atk": 90,
       "def": 106,
       "speed": 77,
@@ -38545,8 +38545,8 @@
     },
     {
       "species": "REGIGIGAS",
-      "hp": 110,
-      "atk": 160,
+      "hp": 180,
+      "atk": 170,
       "def": 110,
       "speed": 100,
       "spatk": 80,
@@ -38626,7 +38626,7 @@
     },
     {
       "species": "GIRATINA",
-      "hp": 150,
+      "hp": 200,
       "atk": 100,
       "def": 120,
       "speed": 90,
@@ -38718,7 +38718,7 @@
     },
     {
       "species": "CRESSELIA",
-      "hp": 120,
+      "hp": 160,
       "atk": 70,
       "def": 120,
       "speed": 85,
@@ -38954,10 +38954,10 @@
     {
       "species": "DARKRAI",
       "hp": 70,
-      "atk": 90,
+      "atk": 100,
       "def": 90,
       "speed": 125,
-      "spatk": 135,
+      "spatk": 195,
       "spdef": 90,
       "types": [
         "TYPE_DARK",
@@ -39330,12 +39330,12 @@
     },
     {
       "species": "DEOXYS_ATK",
-      "hp": 50,
-      "atk": 180,
-      "def": 20,
+      "hp": 65,
+      "atk": 255,
+      "def": 30,
       "speed": 150,
-      "spatk": 180,
-      "spdef": 20,
+      "spatk": 255,
+      "spdef": 30,
       "types": [
         "TYPE_PSYCHIC",
         "TYPE_PSYCHIC"
@@ -39432,12 +39432,12 @@
     },
     {
       "species": "DEOXYS_DEF",
-      "hp": 50,
+      "hp": 120,
       "atk": 70,
-      "def": 160,
+      "def": 235,
       "speed": 90,
       "spatk": 70,
-      "spdef": 160,
+      "spdef": 200,
       "types": [
         "TYPE_PSYCHIC",
         "TYPE_PSYCHIC"
@@ -39534,12 +39534,12 @@
     },
     {
       "species": "DEOXYS_SPD",
-      "hp": 50,
-      "atk": 95,
-      "def": 90,
-      "speed": 180,
-      "spatk": 95,
-      "spdef": 90,
+      "hp": 65,
+      "atk": 115,
+      "def": 100,
+      "speed": 255,
+      "spatk": 115,
+      "spdef": 100,
       "types": [
         "TYPE_PSYCHIC",
         "TYPE_PSYCHIC"
@@ -39636,12 +39636,12 @@
     },
     {
       "species": "WORMADAM_SANDY",
-      "hp": 60,
+      "hp": 80,
       "atk": 79,
-      "def": 105,
+      "def": 135,
       "speed": 36,
       "spatk": 59,
-      "spdef": 85,
+      "spdef": 95,
       "types": [
         "TYPE_BUG",
         "TYPE_GROUND"
@@ -39711,11 +39711,11 @@
     },
     {
       "species": "WORMADAM_TRASH",
-      "hp": 60,
-      "atk": 69,
-      "def": 95,
+      "hp": 80,
+      "atk": 79,
+      "def": 135,
       "speed": 36,
-      "spatk": 69,
+      "spatk": 59,
       "spdef": 95,
       "types": [
         "TYPE_BUG",
@@ -39785,7 +39785,7 @@
     },
     {
       "species": "GIRATINA_ORIGIN",
-      "hp": 150,
+      "hp": 200,
       "atk": 120,
       "def": 100,
       "speed": 90,
@@ -39948,10 +39948,10 @@
     {
       "species": "ROTOM_HEAT",
       "hp": 50,
-      "atk": 65,
+      "atk": 95,
       "def": 107,
       "speed": 86,
-      "spatk": 105,
+      "spatk": 125,
       "spdef": 107,
       "types": [
         "TYPE_ELECTRIC",
@@ -40023,10 +40023,10 @@
       "species": "ROTOM_WASH",
       "hp": 50,
       "atk": 65,
-      "def": 107,
+      "def": 137,
       "speed": 86,
       "spatk": 105,
-      "spdef": 107,
+      "spdef": 147,
       "types": [
         "TYPE_ELECTRIC",
         "TYPE_GHOST"
@@ -40096,10 +40096,10 @@
     {
       "species": "ROTOM_FROST",
       "hp": 50,
-      "atk": 65,
+      "atk": 95,
       "def": 107,
       "speed": 86,
-      "spatk": 105,
+      "spatk": 135,
       "spdef": 107,
       "types": [
         "TYPE_ELECTRIC",
@@ -40170,10 +40170,10 @@
     {
       "species": "ROTOM_FAN",
       "hp": 50,
-      "atk": 65,
+      "atk": 95,
       "def": 107,
-      "speed": 86,
-      "spatk": 105,
+      "speed": 116,
+      "spatk": 125,
       "spdef": 107,
       "types": [
         "TYPE_ELECTRIC",
@@ -40244,7 +40244,7 @@
     {
       "species": "ROTOM_MOW",
       "hp": 50,
-      "atk": 65,
+      "atk": 125,
       "def": 107,
       "speed": 86,
       "spatk": 105,

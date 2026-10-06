@@ -976,6 +976,9 @@ static BOOL FieldSystem_GenerateSafariEncounter(FieldSystem *fieldSystem, Pokemo
 
 static BOOL FieldSystem_GenerateBugContestEncounter_Internal(FieldSystem *fieldSystem, Pokemon *leadMon, int rodType, EncounterGenState *encounterGen, u8 encType, int battler, BattleSetup *battleSetup) {
     EncounterSlot *encSlot = BugContest_GetEncounterSlot(FieldSystem_BugContest_Get(fieldSystem), HEAP_ID_FIELD1);
+    if (encSlot == NULL) {
+        return FALSE;
+    }
     if (EncounterGen_DoesRepelSuppressEncounter(encSlot->maxLevel, encounterGen) == TRUE) {
         Heap_Free(encSlot);
         return FALSE;
@@ -1348,10 +1351,25 @@ static u8 EncounterGen_ChooseUnownForm(EncounterGenState *encounterGen) {
 }
 
 static BOOL addGeneratedMonToBattleSetupParty(int battler, EncounterGenState *encounterGen, Pokemon *pokemon, BattleSetup *battleSetup) {
+    u16 baseSpecies;
+    u8 baseForm;
+
     WildMonSetRandomHeldItem(pokemon, battleSetup->battleType, !encounterGen->isEgg && encounterGen->ability == ABILITY_COMPOUNDEYES ? 1 : 0);
     if (GetMonData(pokemon, MON_DATA_SPECIES, NULL) == SPECIES_UNOWN) {
         u8 form = EncounterGen_ChooseUnownForm(encounterGen);
         SetMonData(pokemon, MON_DATA_FORM, &form);
+    }
+    // BUGFIX (2026-10-03, user-reported Bug Catching Contest encounter crashes): the Bug Contest encounter table
+    // (files/data/mushi/mushi_encount.csv) lists SPECIES_WORMADAM_SANDY/TRASH, which are internal form-lookup IDs
+    // (499/500), not real species. The mon was created from that form's own personal data (so its stats, ability and
+    // moves already match the cloak), but a Pokemon must be *stored* as the base species + form number: with species
+    // 500 stored, loading its battle sprite requested file 500*6+2 = 3002 of the 2964-entry Pokemon sprite NARC and
+    // crashed. Convert in place - nothing else needs recomputing, since ResolveMonForm(413, form) maps straight back
+    // to the same personal data the mon was just built from - and refresh the default nickname for the new species.
+    if (SplitFormSpecies(GetMonData(pokemon, MON_DATA_SPECIES, NULL), &baseSpecies, &baseForm)) {
+        SetMonData(pokemon, MON_DATA_SPECIES, &baseSpecies);
+        SetMonData(pokemon, MON_DATA_FORM, &baseForm);
+        SetMonData(pokemon, MON_DATA_SPECIES_NAME, NULL);
     }
     return Party_AddMon(battleSetup->party[battler], pokemon);
 }

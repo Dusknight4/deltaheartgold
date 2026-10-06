@@ -3398,7 +3398,11 @@ BOOL BtlCmd_EndOfTurnWeatherEffect(BattleSystem *battleSystem, BattleContext *ct
 
     if (CheckAbilityActive(battleSystem, ctx, CHECK_ABILITY_ALL_HP, 0, ABILITY_CLOUD_NINE) == 0 && CheckAbilityActive(battleSystem, ctx, CHECK_ABILITY_ALL_HP, 0, ABILITY_AIR_LOCK) == 0) {
         if (ctx->fieldCondition & FIELD_CONDITION_SANDSTORM_ALL) {
-            if (type1 != TYPE_ROCK && type2 != TYPE_ROCK && type1 != TYPE_STEEL && type2 != TYPE_STEEL && type1 != TYPE_GROUND && type2 != TYPE_GROUND && ctx->battleMons[battlerId].hp && GetBattlerAbility(ctx, battlerId) != ABILITY_SAND_VEIL && !(ctx->battleMons[battlerId].moveEffectFlags & 0x40080)) {
+            // QOL (2026-09-24): a Pokemon holding the ability that CAUSED this sandstorm (whether it
+            // has it natively or via this ROM's ability-donor mechanism) is no longer hurt by it,
+            // regardless of type - it doesn't make sense for a Sand Stream mon to take chip damage
+            // from weather it's actively generating itself.
+            if (type1 != TYPE_ROCK && type2 != TYPE_ROCK && type1 != TYPE_STEEL && type2 != TYPE_STEEL && type1 != TYPE_GROUND && type2 != TYPE_GROUND && ctx->battleMons[battlerId].hp && GetBattlerAbility(ctx, battlerId) != ABILITY_SAND_VEIL && GetBattlerAbility(ctx, battlerId) != ABILITY_SAND_STREAM && !(ctx->battleMons[battlerId].moveEffectFlags & 0x40080)) {
                 ctx->moveTemp = MOVE_SANDSTORM;
                 ctx->hpCalc = DamageDivide(ctx->battleMons[battlerId].maxHp * -1, 16);
             }
@@ -3419,7 +3423,9 @@ BOOL BtlCmd_EndOfTurnWeatherEffect(BattleSystem *battleSystem, BattleContext *ct
                     if (ctx->battleMons[battlerId].hp < ctx->battleMons[battlerId].maxHp) {
                         ctx->hpCalc = DamageDivide(ctx->battleMons[battlerId].maxHp, 16);
                     }
-                } else if (type1 != TYPE_ICE && type2 != TYPE_ICE && GetBattlerAbility(ctx, battlerId) != ABILITY_SNOW_CLOAK) {
+                } else if (type1 != TYPE_ICE && type2 != TYPE_ICE && GetBattlerAbility(ctx, battlerId) != ABILITY_SNOW_CLOAK && GetBattlerAbility(ctx, battlerId) != ABILITY_SNOW_WARNING) {
+                    // QOL (2026-09-24): same reasoning as the Sand Stream exemption above - a Snow
+                    // Warning mon shouldn't be hurt by the hail it's causing, regardless of type.
                     ctx->moveTemp = MOVE_HAIL;
                     ctx->hpCalc = DamageDivide(ctx->battleMons[battlerId].maxHp * -1, 16);
                 }
@@ -6788,7 +6794,6 @@ static void Task_GetPokemon(SysTask *task, void *inData) {
     case STATE_GET_POKEMON_CHECK_MON_DATA:
         if (!ov07_02232F60(data->ballData, BALL_ANIM_FADE) && !(data->tempData[DATA_GET_POKEMON_FRAME_COUNTER]--, data->tempData[DATA_GET_POKEMON_FRAME_COUNTER])) {
             ov12_0223BD8C(data->battleSystem, battlerId);
-            Pokemon *mon = BattleSystem_GetPartyMon(data->battleSystem, battlerId, data->ctx->selectedMonIndex[battlerId]); // Get the data of the caught Pokemon.
             if (BattleSystem_GetBattleType(data->battleSystem) & (BATTLE_TYPE_PAL_PARK | BATTLE_TYPE_TUTORIAL)) {           // If this was the Catching Demo or a Pal Park encounter...
                 ov12_022567D4(data->battleSystem, data->ctx, BattleSystem_GetPartyMon(data->battleSystem, battlerId, data->ctx->selectedMonIndex[battlerId]));
                 sub_0201649C(BattleSystem_GetMessageIcon(data->battleSystem), 1);
@@ -6798,21 +6803,13 @@ static void Task_GetPokemon(SysTask *task, void *inData) {
                 data->tempData[DATA_GET_POKEMON_NEEDS_EXTRA_DISPOSAL_CHECK] = TRUE;
                 break;
             }
-            if (BattleSystem_CheckMonCaught(data->battleSystem, GetMonData(mon, MON_DATA_SPECIES, 0))) { // If this was already caught...
-                if (BattleSystem_GetBattleType(data->battleSystem) & BATTLE_TYPE_BUG_CONTEST) {          // If this was the Bug Catching Contest...
-                    sub_0201649C(BattleSystem_GetMessageIcon(data->battleSystem), 1);
-                    PaletteData_BeginPaletteFade(paletteData, 0xF, 0xFFFF, 1, 0, 0x10, RGB_BLACK);
-                    Pokepic_StartPaletteFadeAll(pokepicManager, 0, 0x10, 0, RGB_BLACK);
-                    data->state = STATE_GET_POKEMON_STORE_MON_NO_NAMING_SCREEN;
-                    data->tempData[DATA_GET_POKEMON_NEEDS_EXTRA_DISPOSAL_CHECK] = TRUE;
-                    break;
-                }
-                sub_0201649C(BattleSystem_GetMessageIcon(data->battleSystem), 1);
-                PaletteData_BeginPaletteFade(paletteData, 5, 0xFFFF, 1, 0, 0x10, RGB_BLACK);
-                Pokepic_StartPaletteFadeAll(pokepicManager, 0, 0x10, 0, RGB_BLACK);
-                data->state = STATE_GET_POKEMON_ALREADY_CAUGHT;
-                break;
-            }
+            // QOL (2026-09-26): the Pokedex registration screen (STATE_GET_POKEMON_POKEDEX_ENTRY, below)
+            // now always plays on catching a Pokemon, even if that species was already registered, and
+            // even during the Bug Catching Contest for a species already caught before - the caught-before
+            // special cases that used to skip straight past the registration fanfare were removed, so
+            // execution always falls through to the same "first catch" path below. The Bug Catching
+            // Contest's naming-screen skip still happens correctly afterward and unconditionally, via the
+            // existing BATTLE_TYPE_BUG_CONTEST check in STATE_GET_POKEMON_MOVE_POKEPIC_TO_CENTER.
             BattleMessage msg;
             // "{0}’s data has been added to the Pokédex."
             msg.id = msg_0197_00871;
@@ -7193,7 +7190,9 @@ static u32 BattleSystem_CalculateBallShakes(BattleSystem *bsys, BattleContext *c
         catchRate = GetMonBaseStat(ctx->battleMons[ctx->battlerIdTarget].species, BASE_CATCH_RATE);
     }
 
-    ballMultiplier = 10; // All ball multipliers are /10, so this is x1.
+    ballMultiplier = 20; // QOL: doubled from 10 (x1) to 20 (x2) - every ball's catch bonus in this
+    // function has been doubled the same way (see the matching QOL comments below and the doubled
+    // sStandardBallCatchRates table in asm/overlay_12_battle_command.s for Ultra/Great/Poke/Safari Ball).
     targetMonType1 = GetBattlerVar(ctx, ctx->battlerIdTarget, BMON_DATA_TYPE_1, 0);
     u32 targetMonType2 = GetBattlerVar(ctx, ctx->battlerIdTarget, BMON_DATA_TYPE_2, 0);
     u32 itemTemp = ctx->itemTemp;
@@ -7201,13 +7200,13 @@ static u32 BattleSystem_CalculateBallShakes(BattleSystem *bsys, BattleContext *c
         switch (ctx->itemTemp) {
         case ITEM_NET_BALL: {
             if (targetMonType1 == TYPE_WATER || targetMonType2 == TYPE_WATER || targetMonType1 == TYPE_BUG || targetMonType2 == TYPE_BUG) {
-                ballMultiplier = 30;
+                ballMultiplier = 60; // QOL: doubled from 30 (x3) to 60 (x6).
                 break;
             }
             break;
         case ITEM_DIVE_BALL:
             if (BattleSystem_GetTerrainId(bsys) == TERRAIN_WATER) {
-                ballMultiplier = 35;
+                ballMultiplier = 70; // QOL: doubled from 35 (x3.5) to 70 (x7).
                 break;
             }
             break;
@@ -7221,13 +7220,14 @@ static u32 BattleSystem_CalculateBallShakes(BattleSystem *bsys, BattleContext *c
                 if (ballMultiplier < 10) {
                     ballMultiplier = 10;
                 }
+                ballMultiplier *= 2; // QOL: double the whole computed bonus (now capped at x8, floored at x2).
                 break;
             }
             break;
         }
         case ITEM_REPEAT_BALL:
             if (BattleSystem_CheckMonCaught(bsys, ctx->battleMons[ctx->battlerIdTarget].species) == TRUE) {
-                ballMultiplier = 30;
+                ballMultiplier = 60; // QOL: doubled from 30 (x3) to 60 (x6).
             }
             break;
         case ITEM_TIMER_BALL:
@@ -7238,15 +7238,16 @@ static u32 BattleSystem_CalculateBallShakes(BattleSystem *bsys, BattleContext *c
             if (ballMultiplier > 40) {
                 ballMultiplier = 40;
             }
+            ballMultiplier *= 2; // QOL: double the whole computed bonus (now capped at x8).
             break;
         case ITEM_DUSK_BALL:
             if (BattleSystem_GetTimezone(bsys) == 3 || BattleSystem_GetTimezone(bsys) == 4 || BattleSystem_GetTerrainId(bsys) == TERRAIN_CAVE) {
-                ballMultiplier = 35;
+                ballMultiplier = 70; // QOL: doubled from 35 (x3.5) to 70 (x7).
             }
             break;
         case ITEM_QUICK_BALL:
             if (ctx->totalTurns < 1) {
-                ballMultiplier = 40;
+                ballMultiplier = 80; // QOL: doubled from 40 (x4) to 80 (x8).
             }
             break;
 
@@ -7256,45 +7257,49 @@ static u32 BattleSystem_CalculateBallShakes(BattleSystem *bsys, BattleContext *c
         case ITEM_FAST_BALL: {
             u32 speed = GetMonBaseStat(ctx->battleMons[ctx->battlerIdTarget].species, BASE_SPEED);
             if (speed >= 100) {
-                catchRate *= 4;
+                catchRate *= 8; // QOL: doubled from x4.
             }
             break;
         }
         case ITEM_LEVEL_BALL: {
             u8 attackerLevel = ctx->battleMons[ctx->battlerIdAttacker].level;
             u8 defenderLevel = ctx->battleMons[ctx->battlerIdTarget].level;
+            // QOL: every tier doubled, including the previously-unboosted x1 tier (now x2), so
+            // Level Ball is never worse than a doubled Poke Ball regardless of level matchup.
             if (attackerLevel <= defenderLevel) {
-            } else if (attackerLevel / 2 <= defenderLevel) {
                 catchRate *= 2;
-            } else if (attackerLevel / 4 <= defenderLevel) {
+            } else if (attackerLevel / 2 <= defenderLevel) {
                 catchRate *= 4;
-            } else {
+            } else if (attackerLevel / 4 <= defenderLevel) {
                 catchRate *= 8;
+            } else {
+                catchRate *= 16;
             }
             break;
         }
         case ITEM_LURE_BALL:
             if (BattleSystem_IsFishing(bsys)) {
-                catchRate *= 3;
+                catchRate *= 6; // QOL: doubled from x3.
             }
             break;
         case ITEM_HEAVY_BALL: {
             s32 weight = GetMonWeight(ctx->battleMons[ctx->battlerIdTarget].species);
             // Weight is in kilograms, moved to the left by 1 decimal point.
+            // QOL: every flat bonus/penalty doubled in magnitude.
             if (weight >= 4096) { // 409.6 kg / 903.0 lbs. or more.
-                catchRate += 40;
+                catchRate += 80;
             } else if (weight >= 3072) { // 307.2 kg / 677.3 lbs. or more.
-                catchRate += 30;
+                catchRate += 60;
             } else if (weight >= 2048) { // 204.8 kg / 451.5 lbs. or more.
-                catchRate += 20;
+                catchRate += 40;
             } else if (catchRate < 1024) { // Catch rate is mistakenly checked here instead of weight, causing all Pokemon that do not benefit from the Heavy Ball to be penalized by it.
-                catchRate -= 20;
+                catchRate -= 40;
             }
             break;
         }
         case ITEM_LOVE_BALL: {
             if (ctx->battleMons[ctx->battlerIdAttacker].species == ctx->battleMons[ctx->battlerIdTarget].species && ctx->battleMons[ctx->battlerIdAttacker].gender != ctx->battleMons[ctx->battlerIdTarget].gender) {
-                catchRate *= 8;
+                catchRate *= 16; // QOL: doubled from x8.
             }
             break;
         }
@@ -7302,20 +7307,26 @@ static u32 BattleSystem_CalculateBallShakes(BattleSystem *bsys, BattleContext *c
             u32 i;
             for (i = 0; i < NELEMS(sMoonBallPokemon); i++) {
                 if (sMoonBallPokemon[i] == ctx->battleMons[ctx->battlerIdTarget].species) {
-                    catchRate *= 4;
+                    catchRate *= 8; // QOL: doubled from x4.
                     break;
                 }
             }
             break;
         }
         case ITEM_SPORT_BALL:
-            ballMultiplier = 15;
+            ballMultiplier = 30; // QOL: doubled from 15 (x1.5) to 30 (x3).
+            break;
+        case ITEM_PREMIER_BALL:
+            // QOL (2026-09-24): Premier Ball now has its own bonus - 1.5x a (doubled) Poke Ball's
+            // rate, i.e. 3x the species' base catch rate - matching the bulk-purchase bonus this ROM
+            // now gives (1 free Premier Ball per 10 balls bought) with a catch rate worth having.
+            ballMultiplier = 30;
             break;
         case ITEM_FRIEND_BALL:
         // case ITEM_PARK_BALL:
         // case ITEM_CHERISH_BALL:
         default:
-            ballMultiplier = 10;
+            ballMultiplier = 20; // QOL: doubled from 10 (x1) to 20 (x2).
         }
         if (catchRate > 0xFF) {
             catchRate = 0xFF;
