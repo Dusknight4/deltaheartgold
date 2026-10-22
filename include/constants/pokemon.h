@@ -157,7 +157,9 @@
 #define NUM_BATTLE_STATS (NUM_STATS + 2) // includes Accuracy and Evasion
 
 // Shiny odds
-#define SHINY_ODDS 8 // Actual probability is SHINY_ODDS/65536
+// The shiny value is (TID ^ SID ^ PID high half ^ PID low half), a 16-bit number (0..65535); a mon is shiny when it is below this.
+// Vanilla is 8 (1/8192). 32768 is exactly half of the range, i.e. a flat 50%.
+#define SHINY_ODDS 32768 // Actual probability is SHINY_ODDS/65536
 
 #define MON_DATA_PERSONALITY                0
 #define MON_DATA_IS_PARTY_DECRYPTED         1

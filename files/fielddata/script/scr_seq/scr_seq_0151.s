@@ -97,7 +97,13 @@ scr_seq_0151_005:
 	End
 
 _0114:
-	GoToIfSet FLAG_DAILY_DID_BUG_CONTEST, _02A6
+	; QOL (2026-09-24): removed the FLAG_DAILY_DID_BUG_CONTEST re-entry block (was
+	; `GoToIfSet FLAG_DAILY_DID_BUG_CONTEST, _02A6`, jumping to the "you already
+	; entered today" message at _02A6) so the contest can be entered as many times as
+	; wanted on a valid day - only the weekday check right below is still enforced.
+	; FLAG_DAILY_DID_BUG_CONTEST is still set at the end of a contest (line ~366) but
+	; nothing checks it anymore, so that's harmless. _02A6 itself is left in place
+	; (now unreferenced dead code) rather than deleted, to keep this diff minimal.
 	GetWeekday VAR_TEMP_x4000
 	Compare VAR_TEMP_x4000, 2
 	GoToIfNe _0139

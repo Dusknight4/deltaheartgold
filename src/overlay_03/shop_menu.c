@@ -973,9 +973,16 @@ static u8 ov03_02257F24(MartData *data) {
         if (data->unk264 == 1) {
             sub_02066D80(data->varsFlags);
         }
-        if (data->martType == MART_TYPE_NORMAL && data->item == ITEM_POKE_BALL && data->quantity >= 10 && Bag_AddItem(data->inventory, ITEM_PREMIER_BALL, 1, HEAP_ID_FIELD2) == TRUE) {
+        // QOL (2026-09-24): the free-Premier-Ball bonus used to only trigger on ITEM_POKE_BALL
+        // specifically, and only ever gave exactly 1 regardless of quantity. Now applies to any Poke
+        // Ball variant (the two contiguous ID ranges below cover every ball from Master Ball through
+        // Cherish Ball, and every Apricorn ball from Fast Ball through Park Ball) and scales with
+        // quantity - 1 free Premier Ball per 10 bought, so e.g. buying 99 gives 9.
+        BOOL isAnyPokeBall = (data->item >= ITEM_MASTER_BALL && data->item <= ITEM_CHERISH_BALL) || (data->item >= ITEM_FAST_BALL && data->item <= ITEM_PARK_BALL);
+        u16 bonusPremierBalls = data->quantity / 10;
+        if (data->martType == MART_TYPE_NORMAL && isAnyPokeBall && bonusPremierBalls > 0 && Bag_AddItem(data->inventory, ITEM_PREMIER_BALL, bonusPremierBalls, HEAP_ID_FIELD2) == TRUE) {
             data->unk298 = 13;
-            GameStats_Inc(data->gameStats, GAME_STAT_PREMIER_BALLS_EARNED);
+            GameStats_Add(data->gameStats, GAME_STAT_PREMIER_BALLS_EARNED, bonusPremierBalls);
             return TASK_MART_15;
         }
         ClearFrameAndWindow2(&data->windows[5], 0);

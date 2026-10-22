@@ -1050,7 +1050,12 @@ BOOL ScrCmd_GiveTogepiEgg(ScriptContext *ctx) {
     mon = AllocMonZeroed(HEAP_ID_FIELD2);
     ZeroMonData(mon);
 
-    SetEggStats(mon, SPECIES_TOGEPI, 1, profile, 3, sub_02017FE4(MAPSECTYPE_GIFT, MAPLOC(METLOC_MR_POKEMON)));
+    SetEggStats(mon, SPECIES_DEOXYS, 1, profile, 3, sub_02017FE4(MAPSECTYPE_GIFT, MAPLOC(METLOC_MR_POKEMON)));
+
+    {
+        u8 form = LCRandRange(DEOXYS_FORM_MAX);
+        SetMonData(mon, MON_DATA_FORM, &form);
+    }
 
     for (i = 0; i < MAX_MON_MOVES; i++) {
         if (GetMonData(mon, MON_DATA_MOVE1 + i, 0) == MOVE_NONE) {

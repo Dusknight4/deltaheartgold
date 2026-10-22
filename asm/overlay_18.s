@@ -21363,11 +21363,54 @@ _021F8CDA:
 	str r0, [sp, #8]
 	mov r0, #2
 	str r0, [sp, #0xc]
+	; QOL (2026-09-26): static change per user request - the top banner on this screen now always shows
+	; "Ability: <name>" for the actual caught mon (fetched fresh here via GetMonData/MON_DATA_ABILITY, so
+	; it reflects any ability-donor-granted ability, not just the species' vanilla default), instead of
+	; "Pokedex registration completed." (files/msgdata/msg/msg_0802.gmm index 144's text was changed to
+	; "Ability: {STRVAR_1 0, 0, 0}", the same generic string-placeholder syntax already used elsewhere in
+	; this bank, e.g. index 169's "Compare {STRVAR_1 0, 0, 0}"). This mirrors the dex-number code right
+	; below (same function): build a MessageFormat placeholder value (BufferAbilityName instead of
+	; BufferIntegerAsString), read the template (still index 144, now used as a template instead of a
+	; literal), expand it, then print - reusing r4 (msgData, bank 802) and r6 (the MessageFormat) that the
+	; dex-number code below still needs untouched-in-identity afterward (only their contents get
+	; temporarily populated/read here, not replaced).
+	ldr r0, [r5, #0xc]
+	bl AcquireMonLock
+	add r7, r0, #0
+	ldr r0, [r5, #0xc]
+	mov r1, #0xa
+	mov r2, #0
+	bl GetMonData
+	str r0, [sp, #0x14]
+	ldr r0, [r5, #0xc]
+	add r1, r7, #0
+	bl ReleaseMonLock
+	add r0, r6, #0
+	mov r1, #0
+	ldr r2, [sp, #0x14]
+	bl BufferAbilityName
+	add r0, r4, #0
+	mov r1, #0x90
+	bl NewString_ReadMsgData
+	add r7, r0, #0
+	ldr r1, [sp, #0x10]
+	add r0, r6, #0
+	add r2, r7, #0
+	bl StringExpandPlaceholders
+	add r0, r7, #0
+	bl String_Delete
+	mov r0, #4
+	str r0, [sp]
+	ldr r0, _021F8F0C ; =0x00020100
+	str r0, [sp, #4]
+	mov r0, #2
+	str r0, [sp, #8]
 	add r0, r5, #0
 	add r0, #0x24
-	mov r2, #0x90
-	mov r3, #0x70
-	bl ov18_021F9648
+	ldr r1, [sp, #0x10]
+	mov r2, #0x70
+	mov r3, #0
+	bl ov18_021F95FC
 	mov r1, #0x91
 	lsl r1, r1, #2
 	ldr r0, [r5, #0x10]

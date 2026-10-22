@@ -160,6 +160,9 @@ BOOL Pokemon_TryLevelUp(Pokemon *mon);
 void InitBoxMonMoveset(BoxPokemon *boxMon);
 void MonSetMoveInSlot_ResetPpUp(Pokemon *mon, u16 move, u8 slot);
 u32 MonTryLearnMoveOnLevelUp(Pokemon *mon, int *last_i, u16 *sp0);
+// ENTRY DT (trainer AI): TRUE if the move is in the type's per-type level-up list (ENTRY DS) / in the species' level-up list.
+BOOL IsTypeLevelUpMove(u32 type, u16 move);
+BOOL LevelUpLearnsetHasMove(int species, int form, u16 move);
 void MonDeleteMoveSlot(Pokemon *mon, u32 slot);
 BOOL MonHasMove(Pokemon *mon, u16 move);
 u16 SpeciesToJohtoDexNo(u16 species);
@@ -189,6 +192,8 @@ void MonEncryptSegment(void *data, u32 size, u32 seed);
 void MonDecryptSegment(void *data, u32 size, u32 seed);
 u32 CalcMonChecksum(void *_data, u32 size);
 int ResolveMonForm(int species, int form);
+BOOL SplitFormSpecies(u16 formSpecies, u16 *species, u8 *form);
+u32 GetOriginalAbilityBySpeciesAndPersonality(u32 species, u32 personality);
 u32 MaskOfFlagNo(int flagno);
 BOOL SpeciesIsMythical(u16 species);
 BOOL MonCheckFrontierIneligibility(Pokemon *mon);

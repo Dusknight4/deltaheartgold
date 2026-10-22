@@ -83,7 +83,8 @@ typedef struct TurnData {
     u32 roostFlag : 1;
     u32 runFlag : 2; // 1 - Fled using item, 2 - Fled using ability
     u32 endureFlag : 1;
-    u32 unk0_A : 22;
+    u32 arceusTransformed : 1; // ENTRY DQ: this Arceus already transformed this turn (once per turn)
+    u32 unk0_B : 21;
     int physicalDamage[4];
     int battlerIdPhysicalDamage;
     int battlerBitPhysicalDamage;
@@ -187,7 +188,7 @@ typedef struct UnkBattlemonSub {
     u32 custapBerryFlag : 1;
     u32 quickClawFlag : 1;
     u32 meFirstFlag : 1;
-    u32 unk4_2F : 1; // unused
+    u32 arceusTransformed : 1; // ENTRY DQ: Arceus keeps the type it transformed into (not its plate's) until it leaves the field
     int rechargeCount;
     int fakeOutCount;
     int slowStartTurns;
@@ -275,6 +276,25 @@ typedef struct PlayerActions {
     u32 unk8;
     u32 inputSelection;
 } PlayerActions;
+
+// ENTRY DT: what the trainer AI has seen of one Pokemon in this battle, kept per party slot so it survives switching (see
+// BattleAI_HideOpponentInfo in overlay_12_0224E4FC.c).
+#define AI_KNOWLEDGE_PARTY_SLOTS      6
+#define AI_KNOWLEDGE_MAX_OBSERVATIONS 16
+#define AI_KNOWLEDGE_NOT_IMMUNE       0xFF // obsMul: the move was not stopped by a type, its exact effectiveness was not shown
+#define AI_KNOWLEDGE_MOVE_CHECKED     (1u << 31) // seenMoveTypes: worked out (trainer_ai.c)
+
+typedef struct AIMonKnowledge {
+    u8 numObs;
+    u8 nextObs; // once full, the oldest observation (overwritten next)
+    u8 knownAbility; // its own ability, once named in a battle message
+    u8 padding;
+    u8 obsMoveType[AI_KNOWLEDGE_MAX_OBSERVATIONS]; // hits seen: move type,
+    u8 obsRules[AI_KNOWLEDGE_MAX_OBSERVATIONS]; // type chart rows known to be switched off (AI_CHART_*),
+    u8 obsMul[AI_KNOWLEDGE_MAX_OBSERVATIONS]; // effectiveness x10 (0, 2, 5, 10, 20, 40) or AI_KNOWLEDGE_NOT_IMMUNE
+    u16 seenMoves[MAX_MON_MOVES]; // moves seen used
+    u32 seenMoveTypes[MAX_MON_MOVES]; // AI_KNOWLEDGE_MOVE_CHECKED | the types one of which it must have (none: says nothing)
+} AIMonKnowledge;
 
 typedef struct BattleContext {
     u8 unk_0[4];
@@ -433,7 +453,9 @@ typedef struct BattleContext {
     u8 unk_314C[4];
     int battlersOnField;
     u32 battleContinueFlag : 1;
-    u32 unused : 31;
+    u32 arceusTransformPending : 3; // ENTRY DQ: battler + 1 whose transform plays after the next attack message, 0 = none
+    u32 unused : 28;
+    AIMonKnowledge aiMonKnowledge[BATTLER_MAX][AI_KNOWLEDGE_PARTY_SLOTS]; // ENTRY DT: [first battler using the party][party slot]
 } BattleContext;
 
 typedef struct BattleSystem BattleSystem;

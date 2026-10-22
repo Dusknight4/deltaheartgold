@@ -53,7 +53,10 @@ typedef struct SpriteSystem {
     BOOL hasOamManager;
     NNSG2dCellTransferState *cellTransferState; // 00C
     G2dRenderer renderer;                       // 010
-} SpriteSystem;                                 // size: 0x138
+    // ENTRY EH (2026-10-17): egg-hatch palette colour request lives here (heap) instead of in static .bss - see sprite_system.c
+    u32 pendingPaletteRotation;                 // 138: SPRITE_SYSTEM_PALETTE_ROTATION_MAGIC while a request is pending, else 0
+    u32 pendingPaletteRotationPersonality;      // 13C
+} SpriteSystem;                                 // size: 0x140
 
 typedef struct SpriteManager {
     SpriteList *spriteList;
@@ -116,6 +119,7 @@ BOOL SpriteSystem_LoadCharResObjFromOpenNarc(SpriteSystem *spriteSystem, SpriteM
 s8 SpriteSystem_LoadPlttResObj(SpriteSystem *spriteSystem, SpriteManager *spriteManager, NarcId SpriteSystem_LoadPlttResObj, int fileId, BOOL compressed, int pltt_num, int vram, int resId);
 s8 SpriteSystem_LoadPlttResObjFromOpenNarc(SpriteSystem *spriteSystem, SpriteManager *spriteManager, NARC *SpriteSystem_LoadPlttResObj, int fileId, BOOL compressed, int pltt_num, int vram, int resId);
 u8 SpriteSystem_LoadPaletteBuffer(PaletteData *plttData, PaletteBufferId bufferId, SpriteSystem *spriteSystem, SpriteManager *spriteManager, NarcId narcId, int fileId, BOOL compressed, int pltt_num, int vram, int resId);
+void SpriteSystem_RotateNextPaletteBuffer(SpriteSystem *spriteSystem, u32 personality);
 u8 SpriteSystem_LoadPaletteBufferFromOpenNarc(PaletteData *plttData, PaletteBufferId bufferId, SpriteSystem *spriteSystem, SpriteManager *spriteManager, NARC *narc, int fileId, BOOL compressed, int pltt_num, int vram, int resId);
 BOOL SpriteSystem_LoadCellResObj(SpriteSystem *spriteSystem, SpriteManager *spriteManager, NarcId narcId, int fileId, BOOL compressed, int resId);
 BOOL SpriteSystem_LoadCellResObjFromOpenNarc(SpriteSystem *spriteSystem, SpriteManager *spriteManager, NARC *narc, int fileId, BOOL compressed, int resId);

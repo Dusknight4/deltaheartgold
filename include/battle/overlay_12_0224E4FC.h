@@ -40,6 +40,19 @@ u32 StruggleCheck(BattleSystem *battleSystem, BattleContext *ctx, int battlerId,
 BOOL ov12_02251A28(BattleSystem *battleSystem, BattleContext *ctx, int battlerId, int movePos, BattleMessage *msg);
 int BattleMon_GetMoveIndex(BattleMon *mon, u16 move);
 int ov12_02251D28(BattleSystem *battleSystem, BattleContext *ctx, int moveNo, int moveTypeDefault, int battlerIdAttacker, int battlerIdTarget, int damage, u32 *moveStatusFlag);
+// ENTRY DQ: if the current target is an Arceus about to be hit by the current move, change it (battle data only) to the single
+// type that makes the move hit it worst - an immune type if one exists, otherwise a resisting type, picked at random among
+// equals - and set its form to match. Not in link battles; once per turn per Arceus. TRUE if it changed type.
+BOOL BattleSystem_TryArceusTransform(BattleSystem *battleSystem, BattleContext *ctx);
+
+// ENTRY DT: what the trainer AI knows of the Pokemon it faces (see overlay_12_0224E4FC.c). The three Observe functions are
+// called by the battle as things are shown; Hide / Restore wrap every AI decision (nesting is fine).
+void BattleAI_ObserveMoveResult(BattleSystem *battleSystem, BattleContext *ctx);
+void BattleAI_ObserveMoveUsed(BattleSystem *battleSystem, BattleContext *ctx, int battlerId, u16 move);
+void BattleAI_ObserveAbility(BattleSystem *battleSystem, BattleContext *ctx, int battlerId, int ability);
+void BattleAI_HideOpponentInfo(BattleSystem *battleSystem, BattleContext *ctx, int aiBattlerId);
+void BattleAI_RestoreOpponentInfo(BattleContext *ctx);
+int BattleAI_PostKOSwitchInHidden(BattleSystem *battleSystem, int battlerId);
 void ov12_02252054(BattleContext *ctx, int moveNo, int moveTypeDefault, int abilityAttacker, int abilityTarget, int item, int type1, int type2, u32 *moveStatusFlag);
 BOOL ov12_02252218(BattleContext *ctx, int battlerId);
 u8 GetMonsHitCount(BattleSystem *battleSystem, BattleContext *ctx, u32 flag, int battlerId);

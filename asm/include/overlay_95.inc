@@ -8,6 +8,7 @@
 .public PaletteData_AllocBuffers
 .public PaletteData_FreeBuffers
 .public PaletteData_LoadNarc
+.public SpriteSystem_RotateNextPaletteBuffer
 .public PaletteData_BeginPaletteFade
 .public PaletteData_PushTransparentBuffers
 .public PaletteData_GetSelectedBuffersBitmask

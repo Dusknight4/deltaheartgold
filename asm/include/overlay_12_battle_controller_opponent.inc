@@ -143,6 +143,8 @@
 .public ov10_0221BE20
 .public ov10_0221BEF4
 .public ov10_022205BC
+.public TrainerAI_PickCommandHidden
+.public BattleAI_PostKOSwitchInHidden
 .public ov12_02237B0C
 .public ov12_02237BB8
 .public ov12_02237ED0

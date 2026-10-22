@@ -329,9 +329,11 @@ void CreateNPCTrainerParty(BattleSetup *enemies, int partyIndex, enum HeapID hea
             personality = (LCRandom() | (LCRandom() << 16));
             personality = (personality << 8) + pidGender;
 
-            // Difficulty is a number between 0 and 250 which directly corresponds
-            // to the (uniform) IV spread of the generated Pokemon.
-            iv = (u8)((monSpecies[i].difficulty * 31) / 255);
+            // COLOR MOD: trainer Pokemon used to get one uniform IV (all 6 stats identical) derived from
+            // "difficulty" here, so every Pokemon of a given species on a given trainer had identical stats.
+            // Passing a fixedIV >= 32 makes CreateBoxMon take its normal random-IV path instead (the same one
+            // wild/player Pokemon use), rolling each of the 6 IVs independently for real stat variety.
+            iv = 32;
             CreateMon(mon, species, monSpecies[i].level, iv, TRUE, (s32)personality, OT_ID_RANDOM_NO_SHINY, 0);
 
             // If you were treating the trainer type as a bitfield, you'd put the
@@ -361,7 +363,8 @@ void CreateNPCTrainerParty(BattleSetup *enemies, int partyIndex, enum HeapID hea
             // COLOR MOD: random (not fixed) personality, see the detailed comment above for TRTYPE_MON.
             personality = (LCRandom() | (LCRandom() << 16));
             personality = (personality << 8) + pidGender;
-            iv = (u8)((monSpeciesMoves[i].difficulty * 31) / 255);
+            // COLOR MOD: random per-stat IVs, see the identical change/comment above for TRTYPE_MON.
+            iv = 32;
             CreateMon(mon, species, monSpeciesMoves[i].level, iv, TRUE, (s32)personality, OT_ID_RANDOM_NO_SHINY, 0);
             for (j = 0; j < MAX_MON_MOVES; j++) {
                 MonSetMoveInSlot(mon, monSpeciesMoves[i].moves[j], (u8)j);
@@ -385,7 +388,8 @@ void CreateNPCTrainerParty(BattleSetup *enemies, int partyIndex, enum HeapID hea
             // COLOR MOD: random (not fixed) personality, see the detailed comment above for TRTYPE_MON.
             personality = (LCRandom() | (LCRandom() << 16));
             personality = (personality << 8) + pidGender;
-            iv = (u8)((monSpeciesItem[i].difficulty * 31) / 255);
+            // COLOR MOD: random per-stat IVs, see the identical change/comment above for TRTYPE_MON.
+            iv = 32;
             CreateMon(mon, species, monSpeciesItem[i].level, iv, TRUE, (s32)personality, OT_ID_RANDOM_NO_SHINY, 0);
             SetMonData(mon, MON_DATA_HELD_ITEM, &monSpeciesItem[i].item);
             SetTrMonCapsule(monSpeciesItem[i].capsule, mon, heapID);
@@ -407,7 +411,8 @@ void CreateNPCTrainerParty(BattleSetup *enemies, int partyIndex, enum HeapID hea
             // COLOR MOD: random (not fixed) personality, see the detailed comment above for TRTYPE_MON.
             personality = (LCRandom() | (LCRandom() << 16));
             personality = (personality << 8) + pidGender;
-            iv = (u8)((monSpeciesItemMoves[i].difficulty * 31) / 255);
+            // COLOR MOD: random per-stat IVs, see the identical change/comment above for TRTYPE_MON.
+            iv = 32;
             CreateMon(mon, species, monSpeciesItemMoves[i].level, iv, TRUE, (s32)personality, OT_ID_RANDOM_NO_SHINY, 0);
             SetMonData(mon, MON_DATA_HELD_ITEM, &monSpeciesItemMoves[i].item);
             for (j = 0; j < MAX_MON_MOVES; j++) {

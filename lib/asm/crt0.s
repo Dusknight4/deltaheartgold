@@ -86,7 +86,7 @@ _020008D4:
 	ldr r0, _02000948 ; =OS_IrqHandler
 	str r0, [r1]
 	bl _fp_init
-	bl NitroStartUp
+	bl LoaderGuard_StartUp ; ENTRY DX: was the empty NitroStartUp stub (src/loader_guard.c)
 	bl __call_static_initializers
 	ldr r1, _0200094C ; =NitroMain
 	ldr lr, _02000950 ; =0xFFFF0000

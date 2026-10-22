@@ -773,6 +773,20 @@ _021E5EF4: .word Heap_Free
 ov95_021E5EF8: ; 0x021E5EF8
 	push {r4, r5, r6, lr}
 	sub sp, #0x38
+	; COLOR MOD (2026-10-11, per user request): the hatching EGG is a 2D OBJ whose palette is NARC a/1/1/5 member 9 (cream with
+	; green spots), loaded below by the first SpriteSystem_LoadPaletteBuffer call. Ask that load to colour-rotate it with the
+	; egg's own personality (the same PID the hatchling's sprite is rotated with). r0 = work, [r0] = args, [args+0xc] = Pokemon.
+	add r6, r0, #0
+	ldr r0, [r6]
+	ldr r0, [r0, #0xc]
+	mov r1, #0 ; MON_DATA_PERSONALITY
+	mov r2, #0
+	bl GetMonData
+	; ENTRY EH: the request is stored in the SpriteSystem ([work+0x54], the r2 argument of the load below), not in static storage
+	add r1, r0, #0
+	ldr r0, [r6, #0x54]
+	bl SpriteSystem_RotateNextPaletteBuffer
+	add r0, r6, #0
 	ldr r3, _021E5FDC ; =ov95_021E7594
 	add r2, sp, #0x18
 	add r6, r0, #0

@@ -294,7 +294,6 @@ int sub_0203E324();
 void sub_0203E33C(FieldSystem *fieldSystem, int a1);
 BgConfig *FieldSystem_GetBgConfigPtr(FieldSystem *fieldSystem);
 SaveData *FieldSystem_GetSaveData(FieldSystem *fieldSystem);
-void Task_AntipiracyRandom();
 void Field_SetEnvironmentSoundState_None_Unk2();
 
 extern const OverlayManagerTemplate gApplication_NewGameFieldsys;

@@ -5,6 +5,7 @@
 #include "constants/scrcmd.h"
 #include "constants/sndseq.h"
 
+#include "bug_contest_internal.h"
 #include "field/field_control.h"
 #include "field/signpost.h"
 
@@ -28,6 +29,13 @@
 FS_EXTERN_OVERLAY(intro_title);
 FS_EXTERN_OVERLAY(OVY_124);
 FS_EXTERN_OVERLAY(field);
+
+// QOL (2026-09-26): moved here (from a `static` array in overlay_bug_contest.c) so this data survives
+// the "bug_contest" overlay being loaded/unloaded on every single wild-encounter check during the Bug
+// Catching Contest. CRITICAL FOLLOW-UP (2026-09-27): now just a pointer to a per-contest heap
+// allocation, not the array itself - see the long comment on this declaration in bug_contest_internal.h
+// for why a permanent 376-byte array here ended up breaking save-file loading on real hardware.
+BUGMON *gBugContestEncounters;
 
 const OverlayManagerTemplate gApplication_NewGameFieldsys = {
     .init = Field_NewGame_AppInit,
@@ -313,11 +321,8 @@ SaveData *FieldSystem_GetSaveData(FieldSystem *fieldSystem) {
     return fieldSystem->saveData;
 }
 
-void Task_AntipiracyRandom() {
-    LCRandom();
-    LCRandom();
-}
-
+// ANTI-PIRACY REMOVAL (2026-10-05, Changelog ENTRY DN): Task_AntipiracyRandom (and Task_AntipiracyMath in the deleted
+// src/sin_vcount.c) were the "intentional lag" SysTasks created on non-genuine hardware; nothing creates them any more.
 void Field_SetEnvironmentSoundState_None_Unk2() {
     sFieldSysPtr->environmentSoundState = ENVIRONMENT_SOUND_NONE_UNK2;
 }

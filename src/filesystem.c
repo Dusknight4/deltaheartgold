@@ -85,6 +85,12 @@ static void *AllocAndReadFromNarcMemberByPathAndId(const char *path, s32 file_id
         dest = Heap_AllocAtEnd(heapID, chunk_size);
         break;
     }
+    if (dest == NULL) {
+        // BUGFIX (2026-10-04): the allocation above can fail when its heap is full; never issue the card read into a NULL
+        // destination. Callers must handle the NULL return (the Johto-dex table loader was the one that crashed).
+        FS_CloseFile(&file);
+        return NULL;
+    }
     FS_ReadFile(&file, dest, (s32)chunk_size);
     FS_CloseFile(&file);
     return dest;

@@ -8,6 +8,7 @@
 #include "obj_char_transfer.h"
 #include "obj_pltt_transfer.h"
 #include "palette.h"
+#include "pokepic.h"
 #include "sprite.h"
 #include "sprite_transfer.h"
 #include "unk_02009D48.h"
@@ -37,6 +38,8 @@ SpriteSystem *SpriteSystem_Alloc(enum HeapID heapID) {
     ret->heapID = heapID;
     ret->numGfxHandlers = 0;
     ret->hasOamManager = TRUE;
+    ret->pendingPaletteRotation = 0;
+    ret->pendingPaletteRotationPersonality = 0;
     return ret;
 }
 
@@ -365,10 +368,44 @@ s8 SpriteSystem_LoadPlttResObjFromOpenNarc(SpriteSystem *spriteSystem, SpriteMan
     return -1;
 }
 
+// QOL (2026-10-11, per user request): one-shot request used by the egg hatch screen (overlay 95) - the NEXT palette loaded
+// through SpriteSystem_LoadPaletteBuffer on this SpriteSystem is colour-rotated by this personality (the hatching egg's own
+// colours), in both the unfaded and faded PaletteData buffers. The request is consumed by that call.
+// ENTRY EH (2026-10-17): the request used to be two static variables. That was the only change in the whole hack that added static
+// .bss, and it was the one piece that broke booting on the R4 (YSMenu and nds-bootstrap) - see Changelog ENTRY EG addenda 3/4. The
+// request now lives in the heap-allocated SpriteSystem, is armed with a magic value rather than TRUE, and the rotation only runs
+// when both palette buffers exist and the slots are inside the 16 OBJ palettes. Nothing static, nothing on the boot path.
+#define SPRITE_SYSTEM_PALETTE_ROTATION_MAGIC 0x50414C54 // 'PALT'
+
+void SpriteSystem_RotateNextPaletteBuffer(SpriteSystem *spriteSystem, u32 personality) {
+    if (spriteSystem == NULL) {
+        return;
+    }
+    spriteSystem->pendingPaletteRotation = SPRITE_SYSTEM_PALETTE_ROTATION_MAGIC;
+    spriteSystem->pendingPaletteRotationPersonality = personality;
+}
+
 u8 SpriteSystem_LoadPaletteBuffer(PaletteData *plttData, PaletteBufferId bufferId, SpriteSystem *spriteSystem, SpriteManager *spriteManager, NarcId narcId, int fileId, BOOL compressed, int pltt_num, int vram, int resId) {
     int ret = SpriteSystem_LoadPlttResObj(spriteSystem, spriteManager, narcId, fileId, compressed, pltt_num, vram, resId);
     if (ret != -1) {
         PaletteData_LoadPaletteSlotFromHardware(plttData, bufferId, ret * 16, pltt_num * 32);
+        if (spriteSystem != NULL && spriteSystem->pendingPaletteRotation == SPRITE_SYSTEM_PALETTE_ROTATION_MAGIC && plttData != NULL && ret >= 0 && pltt_num > 0 && ret + pltt_num <= 16) {
+            u16 *unfaded = PaletteData_GetUnfadedBuf(plttData, bufferId);
+            u16 *faded = PaletteData_GetFadedBuf(plttData, bufferId);
+            int i;
+
+            for (i = 0; i < pltt_num; i++) {
+                if (unfaded != NULL) {
+                    PersonalityRotatePalette(unfaded + (ret + i) * 16, 16, spriteSystem->pendingPaletteRotationPersonality);
+                }
+                if (faded != NULL) {
+                    PersonalityRotatePalette(faded + (ret + i) * 16, 16, spriteSystem->pendingPaletteRotationPersonality);
+                }
+            }
+        }
+    }
+    if (spriteSystem != NULL) {
+        spriteSystem->pendingPaletteRotation = 0;
     }
     return ret;
 }

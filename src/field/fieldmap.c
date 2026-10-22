@@ -27,7 +27,6 @@
 #include "bug_contest.h"
 #include "camera.h"
 #include "dialog_box.h"
-#include "dsprot.h"
 #include "field_bgm.h"
 #include "field_system.h"
 #include "field_warp_tasks.h"
@@ -73,7 +72,6 @@ enum FieldMapInitState {
     FIELD_MAP_INIT_STATE_DONE
 };
 
-FS_EXTERN_OVERLAY(ds_protect);
 FS_EXTERN_OVERLAY(OVY_2);
 FS_EXTERN_OVERLAY(OVY_3);
 FS_EXTERN_OVERLAY(OVY_4);
@@ -95,17 +93,10 @@ static void InitGraphicsAndManagers(FieldSystem *fieldSystem);
 static void FieldSystem_InitMapLoadManager(FieldSystem *fieldSystem);
 static void ov01_021E64A4(FieldSystem *fieldSystem);
 static void ov01_021E6580(FieldSystem *fieldSystem);
-static BOOL ov01_021E662C(void);
 static MapObjectsToPreload *FetchMapObjectsToPreload(enum HeapID heapID, u16 modelBank);
 static const int *MapObjectsToPreload_GetIDs(const MapObjectsToPreload *mapObjectsToPreload);
 static int MapObjectsToPreload_GetCount(const MapObjectsToPreload *mapObjectsToPreload);
 static void MapObjectsToPreload_Free(MapObjectsToPreload *mapObjectsToPreload);
-static GFIntrCB ov01_021E66A8(void);
-static GFIntrCB ov01_021E66B8(void);
-static GFIntrCB ov01_021E66C8(void);
-static void ov01_021E66D8(void);
-static void ov01_021E66DC(void);
-static void ov01_021E66E0(void);
 
 static void FieldMap_VBlankCallback(void *fsys) {
     FieldSystem *fieldSystem = fsys;
@@ -116,28 +107,26 @@ static void FieldMap_VBlankCallback(void *fsys) {
     sub_02023910(ov01_021FA1D0(sub_0205F1A0(fieldSystem->mapObjectManager)));
 }
 
+// ANTI-PIRACY REMOVAL (2026-10-05, Changelog ENTRY DN): the DSProt detection that used to run in FieldMap_Init / FieldMap_Exit
+// (ds_protect overlay load/unload, six Detect* calls feeding an "offset" checksum, and the Task_AntipiracyRandom /
+// Task_AntipiracyMath SysTasks created when that checksum or the always-TRUE ov01_021E662C check said "not genuine") is gone.
+// On genuine hardware every checksum remainder was 0 (0xDCE6A1 % 3433 == % 4217 == 0, 0x2AAACF % 2221 == % 1259 == 0), so no
+// task was ever created - the behaviour below is exactly the genuine-cartridge path. Original: backups/2026-10-05_dsprot-removal-v0_pre.
 BOOL FieldMap_Init(OverlayManager *man, int *state) {
-    u32 offset = 0xDCE6A1;
     BOOL ret = FALSE;
     FieldSystem *fieldSystem = OverlayManager_GetArgs(man);
 
     switch (*state) {
     case FIELD_MAP_INIT_STATE_RESET:
-        FS_LoadOverlay(MI_PROCESSOR_ARM9, FS_OVERLAY_ID(ds_protect));
-
         Main_SetVBlankIntrCB(NULL, NULL);
         HBlankInterruptDisable();
 
         G2_BlendNone();
         G2S_BlendNone();
 
-        offset += (0x4CF * DSProt_DetectDummy(&ov01_021E66A8));
-
         ResetVisibleHardwareWindows(PM_LCD_TOP);
         ResetVisibleHardwareWindows(PM_LCD_BOTTOM);
         ov01_021E6364(fieldSystem);
-
-        offset += (0x6B * (DSProt_DetectNotEmulator(&ov01_021E66D8) == FALSE));
 
         FieldMapChange_Set3DDisplay(fieldSystem);
         fieldSystem->unk11C = 8;
@@ -158,20 +147,12 @@ BOOL FieldMap_Init(OverlayManager *man, int *state) {
             }
         }
 
-        offset += DSProt_DetectFlashcart(&ov01_021E66B8) * 0x3A1;
-
         Heap_Create(HEAP_ID_3, HEAP_ID_FIELD1, fieldSystem->mapLoadMode->unk_4);
         GF_ASSERT(fieldSystem->unk4 == NULL);
-
-        FS_UnloadOverlay(MI_PROCESSOR_ARM9, FS_OVERLAY_ID(ds_protect));
 
         fieldSystem->unk4 = Heap_Alloc(HEAP_ID_FIELD1, sizeof(FieldSystemUnkSub4));
         MI_CpuFill8(fieldSystem->unk4, 0, sizeof(FieldSystemUnkSub4));
         fieldSystem->unk4->field3dObjectTaskManager = Field3dObjectTaskManager_Create(fieldSystem, HEAP_ID_FIELD1, 8);
-
-        if (offset % 3433 != 0) {
-            SysTask_CreateOnMainQueue(Task_AntipiracyRandom, NULL, 123);
-        }
 
         ov01_021E6028();
 
@@ -187,10 +168,6 @@ BOOL FieldMap_Init(OverlayManager *man, int *state) {
         BgConfig_Init(fieldSystem->bgConfig);
         FieldMessage_LoadTextPalettes(GF_PAL_LOCATION_MAIN_BG, TRUE);
         TryStartMapScriptByType(fieldSystem, INIT_SCRIPT_ON_LOAD);
-
-        if (offset % 4217 != 0) {
-            SysTask_CreateOnMainQueue(Task_AntipiracyRandom, NULL, 789);
-        }
 
         fieldSystem->unk120 = ov02_0224F864(HEAP_ID_FIELD1);
         break;
@@ -224,10 +201,6 @@ BOOL FieldMap_Init(OverlayManager *man, int *state) {
             ret = TRUE;
             fieldSystem->runningFieldMap = TRUE;
         }
-        if (ov01_021E662C() == FALSE) {
-            SysTask_CreateOnMainQueue(Task_AntipiracyMath, NULL, 1000);
-            SysTask_CreateOnMainQueue(Task_AntipiracyMath, NULL, 1400);
-        }
         break;
     }
     (*state)++;
@@ -252,17 +225,12 @@ BOOL FieldMap_Main(OverlayManager *man, int *state) {
 
 BOOL FieldMap_Exit(OverlayManager *man, int *state) {
     FieldSystem *fieldSystem;
-    int offset = 0x2AAACF;
     fieldSystem = OverlayManager_GetArgs(man);
     MapLoadManager_Tick(fieldSystem->mapLoadManager);
 
     switch (*state) {
     case 0:
-        FS_LoadOverlay(MI_PROCESSOR_ARM9, FS_OVERLAY_ID(ds_protect));
-
         Gymmick_Free(fieldSystem);
-
-        offset += 0x23B * DSProt_DetectDummy(&ov01_021E66C8);
 
         MapLoadManager_ForgetTrackedTarget(fieldSystem->mapLoadManager);
 
@@ -275,8 +243,6 @@ BOOL FieldMap_Exit(OverlayManager *man, int *state) {
         GF_ASSERT(fieldSystem->mapPropAnimationManager != NULL);
         MapLoadManager_End(fieldSystem->mapLoadManager);
 
-        offset += 0x18D * (DSProt_DetectNotFlashcart(&ov01_021E66DC) == FALSE);
-
         MapPropAnimationManager_UnloadAllAnimations(fieldSystem->mapPropAnimationManager);
         MapPropAnimationManager_Free(fieldSystem->mapPropAnimationManager);
         MapPropOneShotAnimationManager_Free(&fieldSystem->mapPropOneShotAnimationManager);
@@ -284,20 +250,11 @@ BOOL FieldMap_Exit(OverlayManager *man, int *state) {
         ov01_02204634(fieldSystem->unkCC);
         ov01_02204278(fieldSystem->unkC8);
 
-        BOOL notEmulator = DSProt_DetectNotEmulator(&ov01_021E66E0) == FALSE;
-        u32 unkVal = notEmulator * 0x8B + offset;
-
         FieldTextureManager_FreeAllSlots(fieldSystem->unk4->textureManager);
-
-        FS_UnloadOverlay(MI_PROCESSOR_ARM9, FS_OVERLAY_ID(ds_protect));
 
         FieldTextureManager_Destroy(fieldSystem->unk4->textureManager);
 
         fieldSystem->unk4->textureManager = NULL;
-
-        if (unkVal % 2221 != 0) {
-            SysTask_CreateOnMainQueue(Task_AntipiracyRandom, NULL, 7845);
-        }
 
         sub_0205E4C8(fieldSystem->mapObjectManager);
         ov01_021F9250(fieldSystem->mapObjectManager);
@@ -308,10 +265,6 @@ BOOL FieldMap_Exit(OverlayManager *man, int *state) {
         ov01_02205424(fieldSystem);
         MapObjectsToPreload_Free(fieldSystem->mapObjectsToPreload);
         fieldSystem->mapObjectsToPreload = NULL;
-
-        if (unkVal % 1259 != 0) {
-            SysTask_CreateOnMainQueue(Task_AntipiracyRandom, NULL, 1245);
-        }
 
         MapPropManager_Free(fieldSystem->mapPropManager);
         (*state)++;
@@ -771,11 +724,6 @@ static void ov01_021E6580(FieldSystem *fieldSystem) {
     Main_SetVBlankIntrCB(FieldMap_VBlankCallback, fieldSystem);
 }
 
-static BOOL ov01_021E662C(void) {
-    CARD_SpiWaitGetStatus();
-    return CARD_SpiWaitGetStatus() == 170;
-}
-
 static MapObjectsToPreload *FetchMapObjectsToPreload(enum HeapID heapID, u16 modelBank) {
     int i;
     MapObjectsToPreload *result = Heap_Alloc(heapID, sizeof(MapObjectsToPreload));
@@ -806,25 +754,4 @@ static int MapObjectsToPreload_GetCount(const MapObjectsToPreload *mapObjectsToP
 
 static void MapObjectsToPreload_Free(MapObjectsToPreload *mapObjectsToPreload) {
     Heap_Free(mapObjectsToPreload);
-}
-
-static GFIntrCB ov01_021E66A8(void) {
-    return Heap_AllocAtEnd(HEAP_ID_3, 1000);
-}
-
-static GFIntrCB ov01_021E66B8(void) {
-    return Heap_AllocAtEnd(HEAP_ID_3, 1000);
-}
-
-static GFIntrCB ov01_021E66C8(void) {
-    return Heap_AllocAtEnd(HEAP_ID_3, 1000);
-}
-
-static void ov01_021E66D8(void) {
-}
-
-static void ov01_021E66DC(void) {
-}
-
-static void ov01_021E66E0(void) {
 }

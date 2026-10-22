@@ -15,7 +15,8 @@
 .public sStandardBallCatchRates
 
 sStandardBallCatchRates: ; 0x0226C2EC
-	.byte 20, 15, 10, 15
+	; QOL: doubled from 20, 15, 10, 15 (Ultra 2.0x, Great 1.5x, Poke 1.0x, Safari 1.5x)
+	.byte 40, 30, 20, 30
 
 .public sTrumpCardPowerTable
 

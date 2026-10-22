@@ -45,7 +45,78 @@ static void Main_RunOverlayManager(void);
 static void sub_02000FD8(u32 a0, int a1);
 static BOOL sub_02001098(int a0);
 
+// ---------------------------------------------------------------------------------------------------------------------
+// ENTRY DV: R4 / YSMENU COMPATIBILITY. YSMenu (the R4 / DSTT menu) recognises the game code IPKE and, right after the ARM9
+// image is decompressed, writes its anti-piracy fix for the ORIGINAL HeartGold to fixed addresses (its TTMenu/extinfo.dat):
+// 4 bytes at 0x0201A570, a jump to its own code at 0x023FC490 over 8 bytes at 0x020D8C14, and 4 bytes at 0x020D8C4C. In this
+// modified game other code lives there (for example FSi_SendCommand, used by every file read), so the game hung on a white
+// screen - or not, depending on where each build's code happened to land. tools/ysmguard copies the original bytes of these
+// places into this table after linking (before compression); when YSMenu's jump is found they are put back here, before the
+// file system or any interrupt runs. Nothing else (emulators, nds-bootstrap / TWiLight, real cartridges) is affected.
+// ---------------------------------------------------------------------------------------------------------------------
+typedef struct YSMenuGuardSite {
+    u32 addr;
+    u32 size;
+    u8 ysmenu[8]; // what YSMenu writes there
+    u8 orig[8]; // this build's own bytes (filled in by tools/ysmguard)
+} YSMenuGuardSite;
+
+typedef struct YSMenuGuard {
+    char magic[16]; // located by tools/ysmguard
+    u32 numSites;
+    u32 filled; // 1 once tools/ysmguard has filled in orig[]
+    YSMenuGuardSite sites[3];
+} YSMenuGuard;
+
+#define YSMENU_GUARD_JUMP_SITE 1 // only YSMenu writes "ldr pc, =0x023FC490" there
+
+YSMenuGuard gYSMenuGuard = {
+    "YSMENU_GUARD_V1",
+    3,
+    0,
+    {
+        { 0x0201A570, 4, { 0xC0, 0x46, 0x02, 0xE0 } },
+        { 0x020D8C14, 8, { 0x04, 0xF0, 0x1F, 0xE5, 0x90, 0xC4, 0x3F, 0x02 } },
+        { 0x020D8C4C, 4, { 0xEB, 0x8D, 0x0C, 0xEA } },
+    },
+};
+
+static BOOL YSMenuGuard_SiteHasPatch(volatile YSMenuGuardSite *site) {
+    u32 i;
+    vu8 *code = (vu8 *)site->addr;
+
+    for (i = 0; i < site->size; i++) {
+        if (code[i] != site->ysmenu[i]) {
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+
+static void YSMenuGuard_UndoPatch(void) {
+    volatile YSMenuGuard *guard = &gYSMenuGuard;
+    u32 i, j;
+
+    if (guard->filled != 1 || !YSMenuGuard_SiteHasPatch(&guard->sites[YSMENU_GUARD_JUMP_SITE])) {
+        return;
+    }
+    for (i = 0; i < guard->numSites; i++) {
+        volatile YSMenuGuardSite *site = &guard->sites[i];
+        vu8 *code = (vu8 *)site->addr;
+
+        if (!YSMenuGuard_SiteHasPatch(site)) {
+            continue;
+        }
+        for (j = 0; j < site->size; j++) {
+            code[j] = site->orig[j];
+        }
+        DC_FlushRange((void *)site->addr, site->size);
+        IC_InvalidateRange((void *)site->addr, site->size);
+    }
+}
+
 void NitroMain(void) {
+    YSMenuGuard_UndoPatch(); // ENTRY DV: before anything below touches the file system or enables interrupts
     InitSystemForTheGame();
     InitGraphicMemory();
     InitKeypadAndTouchpad();
@@ -323,3 +394,6 @@ void HandleDSLidAction(void) {
         }
     }
 }
+
+// ENTRY DX: the nds-bootstrap (v2.x) anti-piracy patch is undone in src/loader_guard.c, called from crt0 before NitroMain.
+// This file is kept exactly as in R4FIX-v2 (the build confirmed on the R4) so the code layout does not move.

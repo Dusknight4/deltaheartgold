@@ -14,11 +14,11 @@
 	</row>
 	<row id="msg_0373_R29_00003" index="3">
 		<attribute name="window_context_name">used</attribute>
-		<language name="English">See? Just like that!\rIt’s better to lower your\ntarget’s HP more than I did,\for make it sleep or something.\rYou can try all kinds of things\nto see what works.\rI’ll give you these. Good luck!\r</language>
+		<language name="English">See? Just like that!\rIt’s better to lower your\ntarget’s HP more than I did,\for make it sleep or something.\rYou can try all kinds of things\nto see what works.\rI’ll give you a bunch of Poké\nBalls so you can catch some\runique, rare Delta species\nPokémon with altered colors\rand typings. Good luck!\r</language>
 	</row>
 	<row id="msg_0373_R29_00004" index="4">
 		<attribute name="window_context_name">used</attribute>
-		<language name="English">See? Just like that!\rIt’s better to lower your\ntarget’s HP more than I did,\for make it sleep or something.\rYou can try all kinds of things\nto see what works.\rI’ll give you these. Good luck!\r</language>
+		<language name="English">See? Just like that!\rIt’s better to lower your\ntarget’s HP more than I did,\for make it sleep or something.\rYou can try all kinds of things\nto see what works.\rI’ll give you a bunch of Poké\nBalls so you can catch some\runique, rare Delta species\nPokémon with altered colors\rand typings. Good luck!\r</language>
 	</row>
 	<row id="msg_0373_R29_00005" index="5">
 		<attribute name="window_context_name">garbage</attribute>

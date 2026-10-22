@@ -2647,6 +2647,7 @@ static void BattleControllerPlayer_RunScript(BattleSystem *battleSystem, BattleC
 static void ov12_0224C38C(BattleSystem *battleSystem, BattleContext *ctx) {
     switch (ctx->unk_48) {
     case 0:
+        ctx->arceusTransformPending = 0; // ENTRY DQ
         ov12_0224BCA4(battleSystem, ctx);
         ctx->unk_48++;
         return;
@@ -2743,18 +2744,33 @@ static void ov12_0224C4D8(BattleSystem *battleSystem, BattleContext *ctx) {
         ctx->unk_4C++;
         // fallthrough
     case 4:
+        // ENTRY DQ: an Arceus about to be hit changes type right before the type chart (case 5), so the move hits the new
+        // type. The transformation is shown after "<attacker> used <move>!": straight away if that message has already been
+        // printed (or will not be), otherwise by BtlCmd_PrintAttackMessage when it is.
+        ctx->unk_4C++;
+        if (!(ctx->unk_2184 & 2) && ctx->battlerIdTarget != BATTLER_NONE && BattleSystem_TryArceusTransform(battleSystem, ctx) == TRUE) {
+            if (ctx->battleStatus & BATTLE_STATUS_NO_ATTACK_MESSAGE) {
+                ReadBattleScriptFromNarc(ctx, NARC_a_0_0_1, BATTLE_SUBSCRIPT_ARCEUS_TRANSFORM);
+                ctx->command = CONTROLLER_COMMAND_RUN_SCRIPT;
+                ctx->commandNext = CONTROLLER_COMMAND_24;
+                return;
+            }
+            ctx->arceusTransformPending = ctx->battlerIdTarget + 1;
+        }
+        // fallthrough
+    case 5:
         if (!(ctx->unk_2184 & 2) && ctx->battlerIdTarget != BATTLER_NONE && ov12_0224B498(battleSystem, ctx) == TRUE) {
             return;
         }
         ctx->unk_4C++;
         // fallthrough
-    case 5:
+    case 6:
         if (!(ctx->unk_2184 & 0x10) && ctx->battlerIdTarget != BATTLER_NONE && ov12_0224BC2C(battleSystem, ctx) == TRUE) {
             return;
         }
         ctx->unk_4C++;
         // fallthrough
-    case 6:
+    case 7:
         ctx->unk_4C = 0;
         break;
     }
@@ -2774,6 +2790,8 @@ static void ov12_0224C5C8(BattleSystem *battleSystem, BattleContext *ctx) {
 }
 
 static void ov12_0224C5F8(BattleSystem *battleSystem, BattleContext *ctx) {
+    BattleAI_ObserveMoveResult(battleSystem, ctx); // ENTRY DT: the AI sees how well the move works on its target
+
     if (ctx->moveStatusFlag & MOVE_STATUS_NO_MORE_WORK) {
         ctx->command = CONTROLLER_COMMAND_35;
     } else if (ctx->moveStatusFlag & MOVE_STATUS_NO_PP) {
@@ -3308,6 +3326,7 @@ static void ov12_0224D23C(BattleSystem *battleSystem, BattleContext *ctx) {
 
     if (ctx->battleStatus2 & BATTLE_STATUS2_DISPLAY_ATTACK_MESSAGE) {
         ctx->moveNoSketch[ctx->battlerIdAttacker] = ctx->moveNoTemp;
+        BattleAI_ObserveMoveUsed(battleSystem, ctx, ctx->battlerIdAttacker, ctx->moveNoTemp); // ENTRY DT
     }
 
     ov12_0224DD74(battleSystem, ctx);
@@ -3356,6 +3375,7 @@ static void ov12_0224D368(BattleSystem *battleSystem, BattleContext *ctx) {
         ctx->executionIndex++;
     }
 
+    ctx->arceusTransformPending = 0; // ENTRY DQ: never carried into the next move
     BattleContext_Init(ctx);
 
     ctx->command = CONTROLLER_COMMAND_8;

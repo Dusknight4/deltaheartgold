@@ -437,8 +437,16 @@ _021FB350: .word ov01_021FB174
 ov01_021FB354: ; 0x021FB354
 	push {r3, lr}
 	bl SysTask_GetData
+	; HARDWARE CRASH FIX (2026-09-24): sibling of ov01_021F6614's fix (same session, same file
+	; overlay_01_021F4704.s) - identical unguarded SysTask_GetData pattern, called from the exact
+	; same two callers (ov01_021F474C/ov01_021F477C) for their "other" task handle. Fixing
+	; proactively alongside the confirmed crash in ov01_021F6614, since both are reached by the
+	; same callers under the same conditions and share the identical missing NULL check.
+	cmp r0, #0
+	beq ov01_021FB354_epilogue
 	mov r1, #1
 	str r1, [r0, #0x74]
+ov01_021FB354_epilogue:
 	pop {r3, pc}
 	thumb_func_end ov01_021FB354
 

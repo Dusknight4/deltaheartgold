@@ -15,6 +15,24 @@ ov27_02259F80: ; 0x02259F80
 	mov r0, #3
 	mov r1, #8
 	bl Heap_Create
+	; HARDWARE CRASH FIX (2026-09-24): Heap_Create's BOOL return value was never checked here.
+	; GF_ASSERT is compiled out in this build (see include/assert.h), so when heap 3 doesn't have
+	; 0x18D00 contiguous free bytes, Heap_Create(3, 8, 0x18D00) fails completely silently and heap
+	; 8 is never actually created - but this function goes on to call CreateSysTaskAndEnvironment
+	; with heapID=8 a few lines below regardless, which crashes deep inside the Nitro SDK allocator
+	; on a NULL heap handle (real-hardware "Error: Data Abort!", ADDR 0x00000000 - traced here
+	; byte-for-byte via objdump against this exact build; reproduced by declining a save prompt,
+	; confirming a save prompt, and crossing a route connection, all of which reach this same
+	; overlay 27 init through the field system's normal bottom-screen-app switching). src/heap.c's
+	; AllocFromHeapInternal now also has its own NULL-handle guard as a general safety net, but
+	; bailing out here too avoids leaving this overlay half-initialized (background/text setup
+	; below all assume heap 8 exists) - same "return NULL, let the caller's existing failure
+	; handling take over" contract ENTRY AR's CreateSysTaskAndEnvironment guard below already uses.
+	cmp r0, #0
+	bne ov27_02259F80_heap_create_ok
+	mov r7, #0
+	b ov27_02259F80_epilogue
+ov27_02259F80_heap_create_ok:
 	mov r0, #0
 	bl GXS_SetGraphicsMode
 	mov r0, #0x80
@@ -46,6 +64,18 @@ ov27_02259F80: ; 0x02259F80
 	mov r3, #8
 	bl CreateSysTaskAndEnvironment
 	add r7, r0, #0
+	; HARDWARE CRASH FIX (2026-09-23): CreateSysTaskAndEnvironment can return NULL on allocation
+	; failure (see its own definition) - without this guard, SysTask_GetData(NULL) used to crash
+	; unconditionally inside itself (ADDR 0x10) before this session's ENTRY AQ hardened it to return
+	; NULL instead, which just moved the crash one instruction later to the unconditional
+	; "str r7, [r4, #8]" below (ADDR 0x08, a real hardware "Error: Data Abort!" this session traced
+	; here byte-for-byte via objdump against this exact build). Bail out the same way the function's
+	; own "ov27_0225A714 == 0" early-exit path already does elsewhere below (r0 = r7 = NULL,
+	; restore sp, pop) instead of touching a NULL environment pointer.
+	cmp r7, #0
+	bne ov27_02259F80_task_ok
+	b ov27_02259F80_epilogue
+ov27_02259F80_task_ok:
 	bl SysTask_GetData
 	add r4, r0, #0
 	str r7, [r4, #8]
@@ -217,6 +247,7 @@ _0225A12A:
 	mov r0, #0x10
 	mov r1, #1
 	bl GfGfx_EngineBTogglePlanes
+ov27_02259F80_epilogue:
 	add r0, r7, #0
 	add sp, #0x14
 	pop {r4, r5, r6, r7, pc}
@@ -243,18 +274,8 @@ ov27_0225A19C: ; 0x0225A19C
 	str r1, [sp, #4]
 	bl SysTask_GetData
 	add r6, r0, #0
-	ldr r1, _0225A2B0 ; =FS_OVERLAY_ID(ds_protect)
-	mov r0, #0
-	bl FS_LoadOverlay
-	ldr r0, _0225A2B4 ; =ov27_0225C238
-	bl DSProt_DetectFlashcart
-	cmp r0, #0
-	beq _0225A1C8
-	mov r1, #0xfa
-	mov r0, #3
-	lsl r1, r1, #2
-	bl Heap_AllocAtEnd
-_0225A1C8:
+	; ANTI-PIRACY REMOVAL (2026-10-05, Changelog ENTRY DN): the ds_protect overlay load, the three DSProt_Detect* calls (with their
+	; Heap_AllocAtEnd(HEAP_ID_3, 1000) punishments / callbacks) and the overlay unload that used to wrap this function are gone.
 	mov r0, #0x52
 	lsl r0, r0, #4
 	add r0, r6, r0
@@ -298,15 +319,6 @@ _0225A216:
 	add r4, r4, #4
 	cmp r5, #4
 	blt _0225A216
-	ldr r0, _0225A2C0 ; =ov27_0225C248
-	bl DSProt_DetectNotEmulator
-	cmp r0, #0
-	bne _0225A238
-	mov r1, #0xfa
-	mov r0, #3
-	lsl r1, r1, #2
-	bl Heap_AllocAtEnd
-_0225A238:
 	ldr r0, [r6, #0x18]
 	bl SpriteList_Delete
 	mov r0, #0x3f
@@ -342,27 +354,11 @@ _0225A246:
 	bl FreeBgTilemapBuffer
 	mov r0, #8
 	bl Heap_Destroy
-	ldr r0, _0225A2C4 ; =ov27_0225C24C
-	bl DSProt_DetectNotDummy
-	cmp r0, #0
-	bne _0225A2A4
-	mov r1, #0xfa
-	mov r0, #3
-	lsl r1, r1, #2
-	bl Heap_AllocAtEnd
-_0225A2A4:
-	ldr r1, _0225A2B0 ; =FS_OVERLAY_ID(ds_protect)
-	mov r0, #0
-	bl FS_UnloadOverlay
 	add sp, #8
 	pop {r3, r4, r5, r6, r7, pc}
 	.balign 4, 0
-_0225A2B0: .word FS_OVERLAY_ID(ds_protect)
-_0225A2B4: .word ov27_0225C238
 _0225A2B8: .word 0x000004A8
 _0225A2BC: .word 0x000004AC
-_0225A2C0: .word ov27_0225C248
-_0225A2C4: .word ov27_0225C24C
 	thumb_func_end ov27_0225A19C
 
 	thumb_func_start ov27_0225A2C8
@@ -4366,29 +4362,6 @@ _0225C22E:
 _0225C236:
 	pop {r4, pc}
 	thumb_func_end ov27_0225C1EC
-
-	thumb_func_start ov27_0225C238
-ov27_0225C238: ; 0x0225C238
-	ldr r3, _0225C244 ; =Heap_AllocAtEnd
-	mov r1, #0xfa
-	mov r0, #3
-	lsl r1, r1, #2
-	bx r3
-	nop
-_0225C244: .word Heap_AllocAtEnd
-	thumb_func_end ov27_0225C238
-
-	thumb_func_start ov27_0225C248
-ov27_0225C248: ; 0x0225C248
-	bx lr
-	.balign 4, 0
-	thumb_func_end ov27_0225C248
-
-	thumb_func_start ov27_0225C24C
-ov27_0225C24C: ; 0x0225C24C
-	bx lr
-	.balign 4, 0
-	thumb_func_end ov27_0225C24C
 
 	thumb_func_start ov27_0225C250
 ov27_0225C250: ; 0x0225C250

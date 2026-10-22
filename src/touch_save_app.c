@@ -8,7 +8,6 @@
 #include "msgdata/msg/msg_0040.h"
 
 #include "bg_window.h"
-#include "dsprot.h"
 #include "field_system.h"
 #include "font.h"
 #include "gf_gfx_loader.h"
@@ -22,8 +21,6 @@
 #include "text.h"
 #include "unk_02005D10.h"
 #include "yes_no_prompt.h"
-
-FS_EXTERN_OVERLAY(ds_protect);
 
 enum TouchSaveApp_State {
     TOUCHSAVEAPP_STATE_DISPLAY_SAVE_INFORMATION,
@@ -95,9 +92,6 @@ static BOOL TouchSaveApp_SaveSucceeded(TouchSaveAppData *data);
 static BOOL TouchSaveApp_CloseApp(TouchSaveAppData *data);
 static BOOL TouchSaveApp_ShouldPrintAlternateSavingMessage(TouchSaveAppData *data);
 static void TouchSaveApp_SetMenuInputState(MenuInputStateMgr *stateMgr, MenuInputState state);
-static void ov30_0225DC08(void);
-static void ov30_0225DC18(void);
-static void ov30_0225DC28(void);
 
 static const BgTemplate ov30_0225DC64 = {
     .x = 0,
@@ -189,6 +183,14 @@ SysTask *ov30_0225D520(BgConfig *bgConfig, void *a1, FieldSystem *fieldSystem, v
     GfGfx_EngineBTogglePlanes(GX_PLANEMASK_OBJ, GF_PLANE_TOGGLE_OFF);
 
     SysTask *task = CreateSysTaskAndEnvironment((SysTaskFunc)ov30_0225D700, sizeof(TouchSaveAppData), 10, HEAP_ID_8);
+    // HARDWARE CRASH FIX (2026-09-23): CreateSysTaskAndEnvironment can return NULL on allocation failure
+    // (see its own definition, systask_environment.c) - guard against that here instead of unconditionally
+    // dereferencing SysTask_GetData's result. This function's own return type already signals to its
+    // caller that a NULL task is a possibility to handle.
+    GF_ASSERT(task != NULL);
+    if (task == NULL) {
+        return NULL;
+    }
     TouchSaveAppData *data = SysTask_GetData(task);
     data->task = task;
     data->unk0 = 0;
@@ -215,20 +217,12 @@ SysTask *ov30_0225D520(BgConfig *bgConfig, void *a1, FieldSystem *fieldSystem, v
 void ov30_0225D64C(BgConfig *bgConfig, SysTask *task) {
     TouchSaveAppData *data = SysTask_GetData(task);
 
-    FS_LoadOverlay(MI_PROCESSOR_ARM9, FS_OVERLAY_ID(ds_protect));
-
-    if (!DSProt_DetectNotFlashcart(ov30_0225DC28)) {
-        Heap_AllocAtEnd(HEAP_ID_3, 1000);
-    }
-
+    // ANTI-PIRACY REMOVAL (2026-10-05, Changelog ENTRY DN): the three DSProt detection calls and the ds_protect overlay load/
+    // unload that used to wrap this function's body are gone (their callbacks were already empty since ENTRY AX).
     ov01_021F434C(data->unk40);
     ov01_021F43D0(data->unk40);
 
     TextFlags_SetCanTouchSpeedUpPrint(FALSE);
-
-    if (DSProt_DetectEmulator(ov30_0225DC08)) {
-        Heap_AllocAtEnd(HEAP_ID_3, 1000);
-    }
 
     TouchSaveApp_DestroyWindow(data);
     TouchSaveApp_DestroyText(data);
@@ -240,12 +234,6 @@ void ov30_0225D64C(BgConfig *bgConfig, SysTask *task) {
     FreeBgTilemapBuffer(bgConfig, GF_BG_LYR_SUB_0);
 
     Heap_Destroy(HEAP_ID_8);
-
-    if (DSProt_DetectDummy(ov30_0225DC18)) {
-        Heap_AllocAtEnd(HEAP_ID_3, 1000);
-    }
-
-    FS_UnloadOverlay(MI_PROCESSOR_ARM9, FS_OVERLAY_ID(ds_protect));
 }
 
 BOOL ov30_0225D6FC(void *a0) {
@@ -333,10 +321,19 @@ static BOOL TouchSaveApp_DisplaySaveInformation(TouchSaveAppData *data) {
 
 static BOOL TouchSaveApp_AskForSave(TouchSaveAppData *data) {
     if (!Save_FileDoesNotBelongToPlayer(data->fieldSystem->saveData)) {
+        // QOL (2026-09-26): skip both the "Would you like to save the game?" and "There is already a
+        // save file. Would you like to overwrite it?" Yes/No prompts per user request - go straight to
+        // the actual save-writing flow (the "Saving... don't turn off the power" message, then the real
+        // save), as if both had already been answered Yes. The "not my save" ownership check above is
+        // left untouched, since that's a genuine safety check unrelated to this confirmation UX.
+        //
+        // DrawFrameAndWindow2 must still run here even though the confirmation text itself is skipped:
+        // it draws the message window's border/frame graphic, and none of the later states
+        // (PrintSavingMessage, PrintOverwriteMessage, PrintSavedMessage, ...) ever draw it themselves -
+        // they only clear/refill the window's interior (FillWindowPixelBuffer). The frame was only ever
+        // painted once, by whichever prompt happened to run first, which used to always be this one.
         DrawFrameAndWindow2(&data->window, TRUE, 0xEC, 5);
-        data->string = NewString_ReadMsgData(data->msgData, msg_0040_00081);
-        data->textPrinter = AddTextPrinterParameterized(&data->window, 1, data->string, 0, 0, Options_GetTextFrameDelay(data->options), NULL);
-        TouchSaveApp_SetupWaitForTextPrinter(data, TOUCHSAVEAPP_STATE_GET_SAVE_CONFIRMATION);
+        data->state = TOUCHSAVEAPP_STATE_PRINT_SAVING_MESSAGE;
     } else {
         data->state = TOUCHSAVEAPP_STATE_PRINT_NOT_MY_SAVE_MESSAGE;
     }
@@ -499,15 +496,4 @@ static BOOL TouchSaveApp_ShouldPrintAlternateSavingMessage(TouchSaveAppData *dat
 
 static void TouchSaveApp_SetMenuInputState(MenuInputStateMgr *stateMgr, MenuInputState state) {
     MenuInputStateMgr_SetState(stateMgr, state);
-}
-
-static void ov30_0225DC08(void) {
-    Heap_AllocAtEnd(HEAP_ID_3, 1000);
-}
-
-static void ov30_0225DC18(void) {
-    Heap_AllocAtEnd(HEAP_ID_3, 1000);
-}
-
-static void ov30_0225DC28(void) {
 }

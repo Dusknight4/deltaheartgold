@@ -1130,6 +1130,15 @@ static void NamingScreen_CreateSprites(NamingScreenAppData *data) {
         Sprite_SetDrawFlag(data->uiSprites[4], FALSE);
         for (i = 0; i < 7; ++i) {
             data->tasks[i] = CreateSysTaskAndEnvironment(SysTask_NamingScreen_SubspritePosController, sizeof(SubspritePosControllerTaskData), 5, HEAP_ID_NAMING_SCREEN);
+            // HARDWARE CRASH FIX (2026-09-23): CreateSysTaskAndEnvironment can return NULL on allocation
+            // failure (see its own definition, systask_environment.c) - guard against that here instead of
+            // unconditionally dereferencing SysTask_GetData's result, matching the same NULL-safety
+            // established for this pairing's cleanup path (data->tasks[] is destroyed unconditionally
+            // later in this file, which is the confirmed real-hardware crash this session's fix addresses).
+            GF_ASSERT(data->tasks[i] != NULL);
+            if (data->tasks[i] == NULL) {
+                continue;
+            }
             SubspritePosControllerTaskData *taskData = SysTask_GetData(data->tasks[i]);
             taskData->parent = data->uiSprites[7];
             taskData->child = data->uiSprites[i];
@@ -1260,13 +1269,21 @@ static void NamingScreen_HandlePageSwitch(BgConfig *bgConfig, Window *windows, i
             SysTask *task;
 
             task = CreateSysTaskAndEnvironment(SysTask_NamingScreen_WiggleEffect, sizeof(WiggleEffectTaskData), 0, HEAP_ID_NAMING_SCREEN);
-            data = SysTask_GetData(task);
-            data->sprite = pSprites[7];
-            data->state = 0;
-            data->x = Sprite_GetMatrixPtr(pSprites[7])->x;
-            data->y = Sprite_GetMatrixPtr(pSprites[7])->y;
-            posVecs[bgId_prev].x = -11;
-            ++(*pState);
+            // HARDWARE CRASH FIX (2026-09-23): see the identical guard/comment a few hundred lines up in
+            // this same file (the data->tasks[] creation loop) - CreateSysTaskAndEnvironment can return
+            // NULL on allocation failure. Skip only the task-dependent setup below on failure (this whole
+            // block is itself conditional, and unrelated code right after it - the bgId_curr scrolling -
+            // must still run every call, so this can't just be a "break").
+            GF_ASSERT(task != NULL);
+            if (task != NULL) {
+                data = SysTask_GetData(task);
+                data->sprite = pSprites[7];
+                data->state = 0;
+                data->x = Sprite_GetMatrixPtr(pSprites[7])->x;
+                data->y = Sprite_GetMatrixPtr(pSprites[7])->y;
+                posVecs[bgId_prev].x = -11;
+                ++(*pState);
+            }
         }
         posVecs[bgId_curr].y -= 10;
         if (posVecs[bgId_curr].y < -196) {

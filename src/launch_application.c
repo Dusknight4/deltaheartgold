@@ -1045,7 +1045,11 @@ static BOOL Task_NamingScreen(TaskManager *taskman) {
         break;
     case 3:
         NamingScreenArgs *args = data->args;
-        if (args->kind == 1) {
+        // BUGFIX (2026-09-30): data->unk10 can be NULL if its String_New allocation failed (see
+        // CallTask_NamingScreen) - String_Compare would hit the same NULL-dereferencing ASSERT_STRING
+        // crash CopyU16ArrayToString did. Skip the "did they leave it unchanged" check in that case rather
+        // than crash; nameInputString's own value still gets used by SetName below either way.
+        if (args->kind == 1 && data->unk10 != NULL) {
             if (String_Compare(args->nameInputString, data->unk10) == 0) {
                 data->args->noInput = 1;
             }
@@ -1064,7 +1068,11 @@ static BOOL Task_NamingScreen(TaskManager *taskman) {
             *retVar = data->args->noInput;
         }
         NamingScreen_DeleteArgs(data->args);
-        String_Delete(data->unk10);
+        // BUGFIX (2026-09-30): String_Delete also unconditionally dereferences its argument via
+        // ASSERT_STRING - guard against the same NULL data->unk10 case as above.
+        if (data->unk10 != NULL) {
+            String_Delete(data->unk10);
+        }
         Heap_Free(data);
         return TRUE;
     }
@@ -1124,12 +1132,19 @@ void CallTask_NamingScreen(TaskManager *taskman, NameScreenType type, int specie
         }
         data->args->monGender = GetMonData(mon, MON_DATA_GENDER, NULL);
         data->args->monForm = GetMonData(mon, MON_DATA_FORM, NULL);
-        if (defaultStr != NULL) {
+        // BUGFIX (2026-09-30, per user-reported crash): String_New (above) is a Heap_Alloc under the hood
+        // and was never checked here - under heap pressure it can return NULL, and CopyU16ArrayToString's
+        // own NULL check (ASSERT_STRING) doesn't actually stop execution before it unconditionally
+        // dereferences the pointer right after, crashing with a Data Abort at address 4 (the offset of
+        // String's `magic` field). Guard every use of data->unk10 instead (here and below).
+        if (defaultStr != NULL && data->unk10 != NULL) {
             CopyU16ArrayToString(data->unk10, defaultStr);
         }
         break;
     case NAME_SCREEN_GROUP:
-        CopyU16ArrayToString(data->unk10, defaultStr);
+        if (data->unk10 != NULL) {
+            CopyU16ArrayToString(data->unk10, defaultStr);
+        }
         break;
     default:
         if (defaultStr != NULL) {

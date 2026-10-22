@@ -60,6 +60,8 @@ LIBNARC      := $(TOOLSDIR)/nitroarc/libnitroarc.a
 
 # Decompiled NitroSDK tools
 COMPSTATIC   := $(TOOLSDIR)/compstatic/compstatic$(EXE)
+# ENTRY DV: fills the R4 / YSMenu guard table (gYSMenuGuard, src/main.c) in main.sbin before compstatic
+YSMGUARD     := $(TOOLSDIR)/ysmguard/ysmguard$(EXE)
 
 NTRMERGE      := $(TOOLSDIR)/ntr_merge_elf/ntr_merge_elf.sh
 ASM_PROCESSOR := $(TOOLSDIR)/asm_processor/compile.sh
@@ -75,6 +77,7 @@ NATIVE_TOOLS := \
 	$(CSV2BIN) \
 	$(MKFXCONST) \
 	$(COMPSTATIC) \
+	$(YSMGUARD) \
 	$(ELFCODER)
 
 TOOLDIRS := $(foreach tool,$(NATIVE_TOOLS),$(dir $(tool)))
@@ -220,7 +223,9 @@ else
 endif
 
 RESPONSE_TEMPLATE    := $(PROJECT_ROOT)/mwldarm.response.template
-RESPONSE_TEMPLATE_NT := $(PROJECT_ROOT_NT)/mwldarm.response.template
+# (2026-10-05, ENTRY DN) PROJECT_ROOT_NT is only set when NODEP is empty; the launcher builds with NODEP=1, so fall back to PROJECT_ROOT
+# (msys converts the path for the native makelcf.exe) - without this any edit to main.lsf fails with "Cannot open C:/msys64/mwldarm.response.template".
+RESPONSE_TEMPLATE_NT := $(if $(PROJECT_ROOT_NT),$(PROJECT_ROOT_NT),$(PROJECT_ROOT))/mwldarm.response.template
 
 $(RESPONSE): $(LSF) $(RESPONSE_TEMPLATE)
 	$(WINE) $(MAKELCF) $(MAKELCF_FLAGS) $< $(RESPONSE_TEMPLATE_NT) $@

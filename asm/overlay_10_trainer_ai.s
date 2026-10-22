@@ -51,6 +51,11 @@ _0221BF80:
 	cmp r1, #0
 	bne _0221BF5E
 _0221BF9A:
+	; QOL (2026-10-11): Wonder Guard override (src/battle/trainer_ai.c) - runs after all moves were scored, before the best one
+	; is picked. r5 = BattleContext, [sp] = BattleSystem.
+	ldr r0, [sp]
+	add r1, r5, #0
+	bl TrainerAI_WonderGuardOverride
 	mov r3, #0xd9
 	lsl r3, r3, #2
 	ldrb r1, [r5, r3]
@@ -227,6 +232,11 @@ _0221C0D0:
 	strb r1, [r5, r0]
 	bne _0221C0AE
 _0221C0E2:
+	; QOL (2026-10-11): Wonder Guard override, once per evaluated target (see ov10_0221BF44 above). r5 = BattleContext,
+	; r7 = BattleSystem; the target being evaluated is already stored in trainerAIData.battlerIdTarget.
+	add r0, r7, #0
+	add r1, r5, #0
+	bl TrainerAI_WonderGuardOverride
 	mov r2, #0xd9
 	lsl r2, r2, #2
 	ldrb r1, [r5, r2]

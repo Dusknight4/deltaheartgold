@@ -1697,7 +1697,11 @@ _0208909E:
 	ldrh r0, [r1, r0]
 	bl MoveIsHM
 	cmp r0, #1
-	bne _020890D0
+	; QOL (2026-09-24): was `bne _020890D0` - HM moves could not be selected to forget when
+	; replacing a move to learn a new one (a separate, normal-vs-Move-Deleter restriction; the
+	; Move Deleter's own flow does not reach this check at all). Now always falls through to the
+	; normal "forget this move" path regardless of whether MoveIsHM returned true.
+	b _020890D0
 	mov r0, #0x8b
 	lsl r0, r0, #2
 	ldr r0, [r5, r0]
@@ -1797,7 +1801,10 @@ _02089170:
 	ldrh r0, [r6, r7]
 	bl MoveIsHM
 	cmp r0, #1
-	bne _020891C2
+	; QOL (2026-09-24): same fix as the other MoveIsHM check above in this file (was
+	; `bne _020891C2`) - this is the same "can't forget an HM move" block reached via a different
+	; input path (D-pad/button navigation vs. the other check's path). Always fall through now.
+	b _020891C2
 	mov r0, #0x8b
 	lsl r0, r0, #2
 	ldr r0, [r5, r0]
@@ -3055,10 +3062,11 @@ _02089B92:
 	str r0, [r4, #0x50]
 _02089B9A:
 	add r0, r5, #0
-	bl MonIsShiny
-	cmp r0, #1
-	ldr r1, [r4, #0x50]
-	bne _02089BAE
+	ldr r1, [r4, #0x50]        ; CHANGED: was "bl MonIsShiny / cmp r0, #1 / ldr r1, [r4, #0x50]" - the real shiny check is removed
+	lsl r0, r1, #3             ; bit 28 of [r4, #0x50] is the egg flag written above (GetMonData #0x4c)
+	lsr r0, r0, #0x1f          ; r0 = isEgg
+	cmp r0, #0
+	bne _02089BAE              ; egg: clear the star flag (an egg has no revealed shininess); otherwise fall through and set it
 	mov r0, #2
 	lsl r0, r0, #0x1c
 	orr r0, r1

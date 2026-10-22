@@ -164,6 +164,3 @@
 .public ov27_0225C398
 .public ov27_0225C418
 .public ov27_0225C41C
-.public DSProt_DetectFlashcart
-.public DSProt_DetectNotEmulator
-.public DSProt_DetectNotDummy

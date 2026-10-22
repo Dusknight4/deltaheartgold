@@ -4205,8 +4205,18 @@ _021F6610: .word 0x0000086C
 ov01_021F6614: ; 0x021F6614
 	push {r3, lr}
 	bl SysTask_GetData
+	; HARDWARE CRASH FIX (2026-09-24): same unguarded pattern as ENTRY AR (overlay_27.s) and this
+	; session's ov01_021F68DC fix - SysTask_GetData can return NULL (ENTRY AQ hardened it to do so
+	; for a NULL task, rather than crash inside itself), and this shared utility (called from both
+	; ov01_021F474C and ov01_021F477C, passing along whatever task pointer their own caller's struct
+	; had stored at a "is this task still valid" flag field) never checked before writing through
+	; the result. Traced to this exact instruction (the "str r1, [r0, #0x20]" below, ADDR
+	; 0x00000020) via a real-hardware "Error: Data Abort!" reported while walking around a town.
+	cmp r0, #0
+	beq ov01_021F6614_epilogue
 	mov r1, #1
 	str r1, [r0, #0x20]
+ov01_021F6614_epilogue:
 	pop {r3, pc}
 	thumb_func_end ov01_021F6614
 

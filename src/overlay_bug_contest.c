@@ -16,6 +16,7 @@
 #include "unk_0205BB1C.h"
 #include "wild_encounter.h"
 
+
 const u16 sBugContestOpponentClasses[] = {
     TRAINERCLASS_BUG_CATCHER,   // Don
     TRAINERCLASS_BUG_CATCHER,   // Ed
@@ -39,11 +40,20 @@ BugContest *BugContest_New(FieldSystem *fieldSystem, u32 weekday) {
     BugContest *bugContest;
 
     bugContest = (BugContest *)Heap_Alloc(HEAP_ID_3, sizeof(BugContest));
+    if (bugContest == NULL) {
+        GF_ASSERT(FALSE);
+        return NULL;
+    }
     MI_CpuClear8(bugContest, sizeof(BugContest));
     bugContest->heapID = HEAP_ID_3;
     bugContest->saveData = fieldSystem->saveData;
     bugContest->sport_balls = 20;
     bugContest->mon = AllocMonZeroed(bugContest->heapID);
+    if (bugContest->mon == NULL) {
+        GF_ASSERT(FALSE);
+        Heap_Free(bugContest);
+        return NULL;
+    }
     bugContest->national_dex = Pokedex_GetNatDexFlag(Save_Pokedex_Get(bugContest->saveData));
     bugContest->day_of_week = weekday;
     BugContest_BackUpParty(bugContest);
@@ -56,6 +66,11 @@ BugContest *BugContest_New(FieldSystem *fieldSystem, u32 weekday) {
 void BugContest_Delete(BugContest *bugContest) {
     BugContest_RestoreParty_RetrieveCaughtPokemon(bugContest);
     Heap_Free(bugContest->mon);
+    // CRITICAL FOLLOW-UP (2026-09-27): gBugContestEncounters is now a per-contest heap allocation, not a
+    // permanent global array - see bug_contest_internal.h. Free it here, matching bugContest->mon above,
+    // so its heap cost only exists while a contest is actually in progress.
+    Heap_Free(gBugContestEncounters);
+    gBugContestEncounters = NULL;
     Heap_Free(bugContest);
 }
 
@@ -174,16 +189,35 @@ EncounterSlot *BugContest_GetEncounterSlot(BugContest *bugContest, enum HeapID h
     int i;
     u8 modulo;
 
+    // BUGFIX (2026-09-30, per user-reported crash): gBugContestEncounters can legitimately be NULL if
+    // BugContest_InitEncounters failed to load the real table (see its own bugfix comment) - bail the same
+    // way the allocation-failure case just below already does, instead of dereferencing NULL.
+    if (gBugContestEncounters == NULL) {
+        GF_ASSERT(FALSE);
+        return NULL;
+    }
     slot = Heap_AllocAtEnd(heapID, sizeof(EncounterSlot));
+    if (slot == NULL) {
+        GF_ASSERT(FALSE);
+        return NULL;
+    }
     roll = LCRandom() % 100;
     for (i = 0; i < BUGMON_COUNT; i++) {
-        if ((int)roll >= bugContest->encounters[i].rate) {
+        if ((int)roll >= gBugContestEncounters[i].rate) {
             break;
         }
     }
-    slot->species = bugContest->encounters[i].species;
-    modulo = bugContest->encounters[i].lvlmax - bugContest->encounters[i].lvlmin + 1;
-    slot->maxLevel = (LCRandom() % modulo) + bugContest->encounters[i].lvlmin;
+    // BUGFIX (2026-09-30): this loop only ever terminates in-bounds because the real encounter table's
+    // last entry (Ninjask, see files/data/mushi/mushi_encount.csv) has rate=0, which every possible roll
+    // (0-99) satisfies. That is a data guarantee, not something this loop enforces itself - clamp
+    // defensively so a future data edit that drops the trailing rate=0 sentinel (or any other corruption of
+    // gBugContestEncounters) can't read one entry past the end of the array here.
+    if (i >= BUGMON_COUNT) {
+        i = BUGMON_COUNT - 1;
+    }
+    slot->species = gBugContestEncounters[i].species;
+    modulo = gBugContestEncounters[i].lvlmax - gBugContestEncounters[i].lvlmin + 1;
+    slot->maxLevel = (LCRandom() % modulo) + gBugContestEncounters[i].lvlmin;
     slot->minLevel = 0;
     return slot;
 }
@@ -258,6 +292,17 @@ void BugContest_InitOpponents(BugContest *bugContest) {
     flen = FS_GetLength(&file);
     bin = Heap_AllocAtEnd(bugContest->heapID, flen);
     idxs = Heap_AllocAtEnd(bugContest->heapID, 8);
+    if (bin == NULL || idxs == NULL) {
+        GF_ASSERT(FALSE);
+        if (idxs != NULL) {
+            Heap_Free(idxs);
+        }
+        if (bin != NULL) {
+            Heap_Free(bin);
+        }
+        FS_CloseFile(&file);
+        return;
+    }
     FS_ReadFile(&file, bin, flen);
     for (i = 0; i < BUGCONTESTANT_NPC_COUNT; i++) {
         bugContest->contestants[i].id = 0xFF;
@@ -291,22 +336,47 @@ void BugContest_InitEncounters(BugContest *bugContest) {
     FSFile file;
     u32 flen;
     BUGMON *bugmon;
-    int set;
 
+    // CRITICAL FOLLOW-UP (2026-09-27): gBugContestEncounters is now a per-contest heap allocation
+    // (see the long comment in bug_contest_internal.h) instead of a permanent global array, so it no
+    // longer costs any heap-arena capacity outside of an actual contest in progress. Allocated here,
+    // freed in BugContest_Delete, exactly matching bugContest->mon's own lifecycle.
+    gBugContestEncounters = Heap_Alloc(bugContest->heapID, BUGMON_COUNT * sizeof(BUGMON));
+    if (gBugContestEncounters == NULL) {
+        GF_ASSERT(FALSE);
+        return;
+    }
+
+    // QOL (2026-09-24): mushi_encount.bin used to hold 4 separate 10-entry sets, picked by
+    // day-of-week/National Dex status for variety. It now holds exactly one BUGMON_COUNT-entry
+    // (47) set covering every Bug-type species in the game, so there is nothing left to pick
+    // between - always load the single set directly. (Leaving the old day/dex-based "set" index
+    // selection in place would read past the end of this now-smaller file on any day other than
+    // Sunday/Monday.)
     FS_InitFile(&file);
     if (!FS_OpenFile(&file, "data/mushi/mushi_encount.bin")) {
         GF_ASSERT(FALSE);
+        // BUGFIX (2026-09-30, per user-reported crash): gBugContestEncounters was already allocated above
+        // but never gets filled with real data on this path - free it and null it out instead of leaving a
+        // "valid" pointer to uninitialized heap garbage behind. BugContest_GetEncounterSlot's roll-selection
+        // loop trusts the real table's guaranteed rate=0 sentinel on its last entry to always terminate in
+        // bounds; garbage data has no such guarantee, so a stale pointer here could read past the end of the
+        // array and hand back a corrupted species/level for the wild encounter.
+        Heap_Free(gBugContestEncounters);
+        gBugContestEncounters = NULL;
         return;
     }
     flen = FS_GetLength(&file);
     bugmon = Heap_AllocAtEnd(bugContest->heapID, flen);
-    FS_ReadFile(&file, bugmon, flen);
-    if (bugContest->national_dex) {
-        set = bugContest->day_of_week / 2; // Tuesday -> 1, Thursday -> 2, Saturday -> 3
-    } else {
-        set = 0;
+    if (bugmon == NULL) {
+        GF_ASSERT(FALSE);
+        FS_CloseFile(&file);
+        Heap_Free(gBugContestEncounters);
+        gBugContestEncounters = NULL;
+        return;
     }
-    MI_CpuCopy8(&bugmon[set * BUGMON_COUNT], bugContest->encounters, BUGMON_COUNT * sizeof(BUGMON));
+    FS_ReadFile(&file, bugmon, flen);
+    MI_CpuCopy8(bugmon, gBugContestEncounters, BUGMON_COUNT * sizeof(BUGMON));
     Heap_Free(bugmon);
     FS_CloseFile(&file);
 }
@@ -321,11 +391,16 @@ u16 BugContest_JudgePlayerMon(BugContest *bugContest, Pokemon *mon) {
     if (!bugContest->caught_poke) {
         return score;
     }
+    // gBugContestEncounters is NULL if BugContest_InitEncounters failed to load the table (see its bugfix comment).
+    if (gBugContestEncounters == NULL) {
+        GF_ASSERT(FALSE);
+        return 0;
+    }
     species = GetMonData(mon, MON_DATA_SPECIES, NULL);
     for (i = 0; i < BUGMON_COUNT; i++) {
-        if (bugContest->encounters[i].species == species) {
-            bugmon = &bugContest->encounters[i];
-            score += bugContest->encounters[i].score;
+        if (gBugContestEncounters[i].species == species) {
+            bugmon = &gBugContestEncounters[i];
+            score += gBugContestEncounters[i].score;
             break;
         }
     }

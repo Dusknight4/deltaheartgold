@@ -5,6 +5,7 @@
 .public _start_AutoloadDoneCallback
 .public OSi_ReferSymbol
 .public NitroMain
+.public LoaderGuard_StartUp
 .public _fp_init
 .public __call_static_initializers
 .public OS_IrqHandler
